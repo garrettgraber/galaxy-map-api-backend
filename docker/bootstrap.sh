@@ -36,7 +36,7 @@ ls
 
 cd images
 echo "Current directory: $PWD"
-ls; cd ..;
+ls;
 
 echo "bootstrap.sh end."
 echo "Entering bash shell..."
