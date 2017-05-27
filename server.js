@@ -23,40 +23,43 @@ mongoose.connect('mongodb://' + DatabaseLinks.mongo.hostname + ':' + DatabaseLin
 var db = mongoose.connection;
 var Schema = mongoose.Schema;
 
-var PlanetSchema = new Schema({
-    system      : String,
-    sector      : { type : Array , "default" : [] },
-    region      : String,
-    coordinates : String,
-    xGalactic   : String,
-    yGalactic   : String,
-    hasLocation : { type : Boolean, "default": false },
-    LngLat      : { type : Array , "default" : [] },
-    zoom        : Number
+const PlanetSchema = new Schema({
+    system        : String,
+    sector        : { type : Array , "default" : [] },
+    region        : String,
+    coordinates   : String,
+    xGalactic     : Number,
+    yGalactic     : Number,
+    xGalacticLong : Number,
+    yGalacticLong : Number,
+    hasLocation   : { type : Boolean, "default": false },
+    LngLat        : { type : Array , "default" : [] },
+    zoom		  : Number,
+    link          : String
 });
 
 PlanetSchema.set('autoIndex', true);
 
-var PlanetModel = mongoose.model('PlanetModel', PlanetSchema);
-console.log("collections: ", PlanetModel);
+const PlanetModel = mongoose.model('PlanetModel', PlanetSchema);
 
 
-var CoordinateSchema = new Schema({
+const CoordinateSchema = new Schema({
 	coordinates: String,
 });
 
 CoordinateSchema.set('autoIndex', true);
 
-var CoordinateModel = mongoose.model('CoordinateModel', CoordinateSchema);
+const CoordinateModel = mongoose.model('CoordinateModel', CoordinateSchema);
 
 
-var SectorSchema = new Schema({
+const SectorSchema = new Schema({
 	name: String,
 });
 
 SectorSchema.set('autoIndex', true);
 
-var SectorModel = mongoose.model('SectorModel', SectorSchema);
+const SectorModel = mongoose.model('SectorModel', SectorSchema);
+
 
 const HyperLaneSchema = new Schema({
 	hyperspace: String,
@@ -71,7 +74,6 @@ const HyperLaneSchema = new Schema({
 HyperLaneSchema.set('autoIndex', true);
 
 const HyperLaneModel = mongoose.model('HyperLaneModel', HyperLaneSchema);
-
 
 
 db.on('error', function(error) {
