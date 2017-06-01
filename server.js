@@ -11,17 +11,32 @@ var urlencode = require('urlencode');
 console.log("DatabaseLinks: ", DatabaseLinks);
 
 
-if(DatabaseLinks.hasOwnProperty('tiles')) {
-  var TILES = 'http://' + DatabaseLinks.tiles.hostname + ':' + DatabaseLinks.tiles.port + '/tiles-leaflet-new/{z}/{x}/{y}.png';
+
+console.log("NODE_ENV: ", process.env.NODE_ENV);
+
+
+const isDeveloping = process.env.NODE_ENV !== 'production';
+const isProduction = process.env.NODE_ENV === 'production';
+
+
+if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo') && isDeveloping) {
+  	var TILES = 'http://' + DatabaseLinks.tiles.hostname + ':' + DatabaseLinks.tiles.port + '/tiles-leaflet-new/{z}/{x}/{y}.png';
+  	var MONGO = 'mongodb://' + DatabaseLinks.mongo.hostname + ':' + DatabaseLinks.mongo.port;
+} else if (isProduction) {
+	var TILES = '';
+	var MONGO = 'mongodb://' + 'ec2-54-164-234-120.compute-1.amazonaws.com';
 } else {
   var TILES = 'http://localhost:8110/tiles-leaflet-new/{z}/{x}/{y}.png';
 }
 
 
-mongoose.connect('mongodb://' + DatabaseLinks.mongo.hostname + ':' + DatabaseLinks.mongo.port);
+mongoose.connect(MONGO);
 
 var db = mongoose.connection;
 var Schema = mongoose.Schema;
+
+
+
 
 const PlanetSchema = new Schema({
     system        : String,
@@ -34,6 +49,8 @@ const PlanetSchema = new Schema({
     yGalacticLong : Number,
     hasLocation   : { type : Boolean, "default": false },
     LngLat        : { type : Array , "default" : [] },
+    lng           : { type : Number , "default" : null },
+    lat           : { type : Number , "default" : null },
     zoom		  : Number,
     link          : String
 });
@@ -74,6 +91,9 @@ const HyperLaneSchema = new Schema({
 HyperLaneSchema.set('autoIndex', true);
 
 const HyperLaneModel = mongoose.model('HyperLaneModel', HyperLaneSchema);
+
+
+
 
 
 db.on('error', function(error) {
@@ -245,7 +265,6 @@ app.get('/api/no-location', function(req, res) {
 	});
 
 });
-
 
 
 app.get('/api/tile-server-url', function(req, res) {
