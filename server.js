@@ -19,6 +19,9 @@ const isDeveloping = process.env.NODE_ENV !== 'production';
 const isProduction = process.env.NODE_ENV === 'production';
 
 
+console.log("isProduction: ", isProduction);
+
+
 if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo') && isDeveloping) {
   	var TILES = 'http://' + DatabaseLinks.tiles.hostname + ':' + DatabaseLinks.tiles.port + '/tiles-leaflet-new/{z}/{x}/{y}.png';
   	var MONGO = 'mongodb://' + DatabaseLinks.mongo.hostname + ':' + DatabaseLinks.mongo.port;
@@ -29,6 +32,8 @@ if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo'
   var TILES = 'http://localhost:8110/tiles-leaflet-new/{z}/{x}/{y}.png';
 }
 
+
+console.log("MONGO: ", MONGO);
 
 mongoose.connect(MONGO);
 
