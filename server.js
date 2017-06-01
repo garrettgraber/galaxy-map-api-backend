@@ -102,15 +102,25 @@ const HyperLaneModel = mongoose.model('HyperLaneModel', HyperLaneSchema);
 
 
 db.on('error', function(error) {
-	console.error.bind(console, 'connection error:');
+	console.log("Error connecting...");
 });
+
 db.once('open', function() {
-  	console.log("connected to mongo database ");
+  	console.log("connection to mongo database open");
 	PlanetModel.count({}, function(err, count) {
 
 		console.log("Total Planets in Database: ", count);
 
 	});
+});
+
+db.on('connected', function () {
+
+	console.log("Connected to mongo database");
+    // db.db.collectionNames(function (err, names) {
+    //     if (err) console.log(err);
+    //     else console.log(names);
+    // });
 });
 
 var serverPort = 8103;
