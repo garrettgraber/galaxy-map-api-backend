@@ -102,7 +102,7 @@ const HyperLaneModel = mongoose.model('HyperLaneModel', HyperLaneSchema);
 
 
 db.on('error', function(error) {
-	console.log("Error connecting...");
+	console.log("Error connecting: ", error);
 });
 
 db.once('open', function() {
