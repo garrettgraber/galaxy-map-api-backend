@@ -27,7 +27,7 @@ if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo'
   	var MONGO = 'mongodb://' + DatabaseLinks.mongo.hostname + ':' + DatabaseLinks.mongo.port;
 } else if (isProduction) {
 	var TILES = '';
-	var MONGO = 'mongodb://API:GetAHummer@ec2-54-164-234-120.compute-1.amazonaws.com:27017/test';
+	var MONGO = 'mongodb://API:GetAHummer@ec2-54-210-169-231.compute-1.amazonaws.com:27017/test';
 } else {
   var TILES = 'http://localhost:8110/tiles-leaflet-new/{z}/{x}/{y}.png';
 }
