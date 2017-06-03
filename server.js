@@ -291,6 +291,13 @@ app.get('/api/tile-server-url', function(req, res) {
 });
 
 
+app.get('/test', function(req, res) {
+
+	console.log("test endpoint hit!");
+	res.json({test: true});
+});
+
+
 app.listen(serverPort, ip.address(), function () {
 
 	console.log('Example app listening on port http://' + ip.address() + ':' +  serverPort + '!');
