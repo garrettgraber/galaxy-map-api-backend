@@ -217,10 +217,13 @@ app.get('/api/search', function(req, res) {
 	// var system = req.params('system');
 	// var region = req.params('region');
 	// var sector = req.params('sector');
+	// var hyperlane = req.query.hyperspace;
+
+	// console.log("hyperlane: ", hyperlane);
 	// var coordinates = req.params('coordinates');
 
 	PlanetModel.find(req.query, function(err, docs) {
-	 	console.log("docs: ", docs);
+	 	console.log("planets found: ", docs);
 
 	 	if(err || docs.length === 0) {
 
@@ -231,7 +234,23 @@ app.get('/api/search', function(req, res) {
 	 		res.json(docs);		
 
 	 	}
+
+	 	
 	});
+
+	// HyperLaneModel.find(req.query, function(err, docs) {
+	//  	console.log("hyperlane found: ", docs);
+
+	//  	if(err || docs.length === 0) {
+
+	//  		res.sendStatus(404);
+
+	//  	} else {
+
+	//  		res.json(docs);		
+
+	//  	}
+	// });
 
 });
 
@@ -260,11 +279,11 @@ app.get('/api/sectors', function(req, res) {
 });
 
 
-app.get('/api/hyperspace', function(req, res) {
+app.get('/api/hyperspace/', function(req, res) {
 
 	HyperLaneModel.find({}, function(err, result) {
 
-		console.log("Total Hyperlanes in Database: ", result.length);
+		console.log("Total Hyperlanes in Database: ", result);
 		res.json(result);
 
 	});
@@ -288,7 +307,7 @@ app.get('/api/tile-server-url', function(req, res) {
 
   console.log("tile server url: ", TILES);
 
-  res.send(TILES);
+  res.json({tileServerUrl: TILES});
 
 });
 
