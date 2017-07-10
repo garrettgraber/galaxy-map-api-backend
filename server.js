@@ -1,32 +1,29 @@
-var express = require('express');
-var cors = require('cors');
-var ip = require('ip');
-var bodyParser = require('body-parser');
-var moment = require('moment-timezone');
-var DatabaseLinks = require('docker-links').parseLinks(process.env);
-var mongoose = require('mongoose');
-var urlencode = require('urlencode');
+const express = require('express');
+const cors = require('cors');
+const ip = require('ip');
+const bodyParser = require('body-parser');
+const moment = require('moment-timezone');
+const DatabaseLinks = require('docker-links').parseLinks(process.env);
+const mongoose = require('mongoose');
+const urlencode = require('urlencode');
+const request = require('request');
+
+// const MongoDatabase = require('./models/models.js');
+
+// console.log("MongoDatabase: ", MongoDatabase);
 
 
 console.log("DatabaseLinks: ", DatabaseLinks);
-
-
-
 console.log("NODE_ENV: ", process.env.NODE_ENV);
-
-
 const isDeveloping = process.env.NODE_ENV !== 'production';
 const isProduction = process.env.NODE_ENV === 'production';
-
-
 console.log("isProduction: ", isProduction);
-
-
 
 
 if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo') && isDeveloping) {
   	var TILES = 'http://' + DatabaseLinks.tiles.hostname + ':' + DatabaseLinks.tiles.port + '/tiles-leaflet-new/{z}/{x}/{y}.png';
   	var MONGO = 'mongodb://' + DatabaseLinks.mongo.hostname + ':' + DatabaseLinks.mongo.port;
+  	var NAVCOM = 'http://' + DatabaseLinks.navcom.hostname + ':' + DatabaseLinks.navcom.port;
 } else if (isProduction) {
 	var TILES = '';
 	var MONGO = 'mongodb://172.31.65.109:27017/test';
@@ -36,6 +33,7 @@ if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo'
 
 
 console.log("MONGO: ", MONGO);
+console.log("NAVCOM: ", NAVCOM);
 
 mongoose.connect(MONGO);
 
@@ -44,61 +42,65 @@ var Schema = mongoose.Schema;
 
 
 
-
 const PlanetSchema = new Schema({
-    system        : String,
-    sector        : { type : Array , "default" : [] },
-    region        : String,
-    coordinates   : String,
-    xGalactic     : Number,
-    yGalactic     : Number,
-    xGalacticLong : Number,
-    yGalacticLong : Number,
-    hasLocation   : { type : Boolean, "default": false },
-    LngLat        : { type : Array , "default" : [] },
-    lng           : { type : Number , "default" : null },
-    lat           : { type : Number , "default" : null },
-    zoom		  : Number,
-    link          : String
+    system         : String,
+    sector         : { type : Array , "default" : [] },
+    region         : String,
+    coordinates    : String,
+    xGalactic      : Number,
+    yGalactic      : Number,
+    xGalacticLong  : Number,
+    yGalacticLong  : Number,
+    hasLocation    : { type : Boolean, "default": false },
+    LngLat         : { type : Array , "default" : [] },
+    lng            : { type : Number , "default" : null },
+    lat            : { type : Number , "default" : null },
+    zoom           : Number,
+    link           : String
 });
-
 PlanetSchema.set('autoIndex', true);
-
 const PlanetModel = mongoose.model('PlanetModel', PlanetSchema);
 
+const HyperspaceNodeSchema = new Schema({
+    system         : String,
+    lng            : { type : Number , "default" : null },
+    lat            : { type : Number , "default" : null },
+    hyperspaceLanes: { type : Array , "default" : [] },
+    nodeId         : { type : Number, "default" : null }
+});
+HyperspaceNodeSchema.set('autoIndex', true);
+const HyperspaceNodeModel = mongoose.model('HyperspaceNodeModel', HyperspaceNodeSchema);
 
 const CoordinateSchema = new Schema({
-	coordinates: String,
+    coordinates: String,
 });
-
 CoordinateSchema.set('autoIndex', true);
-
 const CoordinateModel = mongoose.model('CoordinateModel', CoordinateSchema);
 
-
 const SectorSchema = new Schema({
-	name: String,
+    name: String,
 });
-
 SectorSchema.set('autoIndex', true);
-
 const SectorModel = mongoose.model('SectorModel', SectorSchema);
 
 
 const HyperLaneSchema = new Schema({
-	hyperspace: String,
-	start: String,
-	end: String,
-	startCoords: { type : Array , "default" : [] },
-	endCoords: { type : Array , "default" : [] },
-	length: Number,
-	link: String
+    name: String,
+    hyperspaceHash: String,
+    start: String,
+    end: String,
+    startCoordsLngLat: { type : Array , "default" : [] },
+    endCoordsLngLat: { type : Array , "default" : [] },
+    length: Number,
+    link: String,
+    startNodeId: { type : Object, "default" : {} },
+    endNodeId: { type : Object, "default" : {} },
+    coordinates: [
+			[Number, Number]
+		]
 });
-
 HyperLaneSchema.set('autoIndex', true);
-
 const HyperLaneModel = mongoose.model('HyperLaneModel', HyperLaneSchema);
-
 
 
 
@@ -191,8 +193,7 @@ app.get('/', function(req, res) {
 app.get('/api/has-location', function(req, res) {
 
 	PlanetModel.find({hasLocation: true}, function (err, docs) {
-	 	console.log(docs);
-	 	console.log("All Planets");
+	 	console.log("All Planets Total: ", docs.length);
 	 	res.json(docs);
 	});
 
@@ -238,20 +239,6 @@ app.get('/api/search', function(req, res) {
 	 	
 	});
 
-	// HyperLaneModel.find(req.query, function(err, docs) {
-	//  	console.log("hyperlane found: ", docs);
-
-	//  	if(err || docs.length === 0) {
-
-	//  		res.sendStatus(404);
-
-	//  	} else {
-
-	//  		res.json(docs);		
-
-	//  	}
-	// });
-
 });
 
 
@@ -279,16 +266,97 @@ app.get('/api/sectors', function(req, res) {
 });
 
 
-app.get('/api/hyperspace/', function(req, res) {
+app.get('/api/hyperspacelane/', function(req, res) {
 
 	HyperLaneModel.find({}, function(err, result) {
 
-		console.log("Total Hyperlanes in Database: ", result);
+		console.log("Total Hyper Lanes in Database: ", result);
 		res.json(result);
 
 	});
 
 });
+
+
+
+app.get('/api/hyperspacelane/search', function(req, res) {
+
+	console.log("req.query: ", req.query);
+
+	// var system = req.params('system');
+	// var region = req.params('region');
+	// var sector = req.params('sector');
+	// var hyperlane = req.query.hyperspace;
+
+	// console.log("hyperlane: ", hyperlane);
+	// var coordinates = req.params('coordinates');
+
+	HyperLaneModel.find(req.query, function(err, docs) {
+	 	console.log("hyperspace lanes found: ", docs);
+
+	 	if(err || docs.length === 0) {
+
+	 		res.sendStatus(404);
+
+	 	} else {
+
+	 		res.json(docs);		
+
+	 	}
+
+	 	
+	});
+
+});
+
+
+app.get('/api/hyperspacenode/', function(req, res) {
+
+	HyperspaceNodeModel.find({}, function(err, result) {
+
+		console.log("Total Hyperspace Nodes in Database: ", result);
+		res.json(result);
+
+	});
+
+});
+
+
+
+app.get('/api/hyperspacenode/search', function(req, res) {
+
+	console.log("req.query: ", req.query);
+
+	// var system = req.params('system');
+	// var region = req.params('region');
+	// var sector = req.params('sector');
+	// var hyperlane = req.query.hyperspace;
+
+	// console.log("hyperlane: ", hyperlane);
+	// var coordinates = req.params('coordinates');
+
+	if(req.query.hasOwnProperty('nodeId')) {
+
+		req.query.nodeId = parseInt(req.query.nodeId);
+	}
+
+	HyperspaceNodeModel.find(req.query, function(err, docs) {
+	 	console.log("hyperspace nodes found: ", docs);
+
+	 	if(err || docs.length === 0) {
+
+	 		res.sendStatus(404);
+
+	 	} else {
+
+	 		res.json(docs);		
+
+	 	}
+
+	});
+
+});
+
 
 
 app.get('/api/no-location', function(req, res) {
@@ -312,11 +380,60 @@ app.get('/api/tile-server-url', function(req, res) {
 });
 
 
-app.get('/test', function(req, res) {
 
-	console.log("test endpoint hit!");
-	res.json({test: true});
+app.post('/api/hyperspace-jump/calc-shortest', function(req, res) {
+
+	console.log("calculate hyperspace jump: ", req.body);
+
+	const JumpData = req.body;
+	const options = {
+	  method: 'post',
+	  body: JumpData,
+	  json: true,
+	  url: NAVCOM + '/hyperspace-jump/calc-shortest'
+	}
+
+	request(options, function (error, response, body) {
+
+		if(error) {
+			console.log("error getting data from navi computer: ", error);
+			res.sendStatus(500);
+		} else {
+			console.log("Found hyperspace jump, sending!!: ", response.body);
+			res.json(body);
+		}
+
+	});
+	       
 });
+
+
+app.post('/api/hyperspace-jump/calc-many', function(req, res) {
+
+	console.log("calculate hyperspace jump: ", req.body);
+
+	const JumpData = req.body;
+	const options = {
+	  method: 'post',
+	  body: JumpData,
+	  json: true,
+	  url: NAVCOM + '/hyperspace-jump/calc-many'
+	}
+
+	request(options, function (error, response, body) {
+
+		if(error) {
+			console.log("error getting data from navi computer: ", error);
+			res.sendStatus(500);
+		} else {
+			console.log("Found hyperspace jump, sending!!");
+			res.json(body);
+		}
+
+	});
+	       
+});
+
 
 
 app.listen(serverPort, ip.address(), function () {
