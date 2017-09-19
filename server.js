@@ -7,6 +7,123 @@ const DatabaseLinks = require('docker-links').parseLinks(process.env);
 const mongoose = require('mongoose');
 const urlencode = require('urlencode');
 const request = require('request');
+const distance = require('euclidean-distance');
+const _ = require('lodash');
+
+
+class Point {
+  constructor(
+    lat,
+    lng
+  ) {
+    this.lat = lat;
+    this.lng = lng;
+  }
+
+  normalizeLng() {
+    return this.lng / 2.0;
+  }
+
+  coordinatesNormalized() {
+  	// console.log("coordinates has fired!");
+  	const normalizedCoordinates = [this.lat, this.normalizeLng()];
+    return normalizedCoordinates;
+  }
+  coordinates() {
+	const coordinatesLatLng = [this.lat, this.lng];
+	return coordinatesLatLng;
+  }
+};
+
+
+class HyperspaceNode {
+	constructor(
+		lng,
+  		lat,
+		hyperspaceLanes,
+		nodeId,
+		loc,
+		system,
+		distanceFromPoint,
+		distanceFromPointNormalized
+	) {
+		this.lng = lng,
+  		this.lat = lat,
+		this.hyperspaceLanes = hyperspaceLanes,
+		this.nodeId = nodeId,
+		this.loc = loc,
+		this.system = system;
+		this.distanceFromPoint = distanceFromPoint;
+		this.distanceFromPointNormalized = distanceFromPointNormalized;
+	}
+}
+
+function distanceBetweenNodesAndPoints(SearchPoint, nodesArray) {
+	const searchPointCoordinates = SearchPoint.coordinatesNormalized();
+	const nodesArraySorted = [];
+	for(let Node of nodesArray) {
+		const NodePoint = new Point(Node.lat, Node.lng);
+		const nodeCoordinatesNormalized = NodePoint.coordinatesNormalized();
+		const nodeCoordinates = NodePoint.coordinates();
+
+		console.log("\nnodeCoordinatesNormalized: ", nodeCoordinatesNormalized);
+		console.log("nodeCoordinates: ", nodeCoordinates);
+
+		const distanceBetweenNormalized = distance(searchPointCoordinates, nodeCoordinatesNormalized);
+		const distanceBetween = distance(searchPointCoordinates, nodeCoordinates);
+
+		const NodeToSend = new HyperspaceNode(
+			Node.lng,
+			Node.lat,
+			Node.hyperspaceLanes,
+			Node.nodeId,
+			Node.loc,
+			Node.system,
+			distanceBetween,
+			distanceBetweenNormalized
+		);
+
+		// console.log("NodeToSend: ", NodeToSend);
+		
+		// let NodeClone = _.cloneDeep(Node);
+		// _.set(NodeClone, 'distance', distanceBetween);
+		// NodeClone._doc['distanceFromPoint'] = parseFloat(distanceBetween.toFixed(8));
+		// console.log("NodeClone: ", NodeClone);
+
+		const outputText = "Distance from " + NodeToSend.system + " : " + NodeToSend.distanceFromPoint;
+		console.log(outputText);
+		const outputTextNormalized = "Distance from " + NodeToSend.system + " : " + NodeToSend.distanceFromPointNormalized + " normalized";
+		console.log(outputTextNormalized);
+		nodesArraySorted.push(NodeToSend);
+
+	}
+
+
+	nodesArraySorted.sort(function(a, b) {
+	    return parseFloat(a.distanceFromPointNormalized) - parseFloat(b.distanceFromPointNormalized);
+	});
+
+	// const sortedArray = _.sortBy(nodesArraySorted, 'distanceFromPoint');
+	console.log("nodesArraySorted: ", nodesArraySorted);
+
+	// console.log("\nSearchPoint: ", SearchPoint);
+	// console.log("searchPointCoordinates: ", searchPointCoordinates);
+	return nodesArraySorted;
+}
+
+
+function isJson(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
+
+
+
 
 // const MongoDatabase = require('./models/models.js');
 
@@ -27,6 +144,7 @@ if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo'
 } else if (isProduction) {
 	var TILES = '';
 	var MONGO = 'mongodb://172.31.65.109:27017/test';
+	var NAVCOM = 'http://172.31.23.181:80'
 } else {
   var TILES = 'http://localhost:8110/tiles-leaflet-new/{z}/{x}/{y}.png';
 }
@@ -66,9 +184,11 @@ const HyperspaceNodeSchema = new Schema({
     lng            : { type : Number , "default" : null },
     lat            : { type : Number , "default" : null },
     hyperspaceLanes: { type : Array , "default" : [] },
-    nodeId         : { type : Number, "default" : null }
+    nodeId         : { type : Number, "default" : null },
+    loc            : { type : Array, "default" : [] }
 });
 HyperspaceNodeSchema.set('autoIndex', true);
+HyperspaceNodeSchema.index({ loc: '2d' });
 const HyperspaceNodeModel = mongoose.model('HyperspaceNodeModel', HyperspaceNodeSchema);
 
 const CoordinateSchema = new Schema({
@@ -119,12 +239,38 @@ db.once('open', function() {
 });
 
 db.on('connected', function () {
-
 	console.log("Connected to mongo database");
-    // db.db.collectionNames(function (err, names) {
-    //     if (err) console.log(err);
-    //     else console.log(names);
-    // });
+  //   db.listCollections().toArray(function (err, names) {
+		// if (err) {
+		// 	console.log("err: ", err);
+		// } else {
+		// 	console.log("names: ", names);
+		// }
+		// // mongoose.connection.close();
+  //   });
+
+	// db.collectionNames(function(error, collections) {
+	//     if (error) {
+	//       throw new Error(error);
+	//     } else {
+	//       collections.map(function(collection) {
+	//         console.log('found collection %s', collection.name);
+	//       });
+	//     }
+	// });
+
+	mongoose.connection.db.listCollections().toArray(function (err, names) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(names);
+      }
+
+
+
+      // mongoose.connection.close();
+    });
+
 });
 
 var serverPort = 8103;
@@ -180,6 +326,8 @@ app.use(function(req, res, next) {
 
 
 
+
+
 app.get('/', function(req, res) {
 
 	console.log("app.get fired...");
@@ -192,6 +340,8 @@ app.get('/', function(req, res) {
 
 app.get('/api/has-location', function(req, res) {
 
+	console.log("get all planets with a location");
+
 	PlanetModel.find({hasLocation: true}, function (err, docs) {
 	 	console.log("All Planets Total: ", docs.length);
 	 	res.json(docs);
@@ -202,6 +352,7 @@ app.get('/api/has-location', function(req, res) {
 
 app.get('/api/all', function(req, res) {
 
+	console.log("get all planets");
 
 	PlanetModel.find({}, function (err, docs) {
 	 	console.log(docs);
@@ -225,32 +376,21 @@ app.get('/api/search', function(req, res) {
 
 	PlanetModel.find(req.query, function(err, docs) {
 	 	console.log("planets found: ", docs);
-
-	 	if(err || docs.length === 0) {
-
-	 		res.sendStatus(404);
-
+	 	console.log("planets err: ", err);
+	 	if(err) {
+	 		res.json(err);
 	 	} else {
-
 	 		res.json(docs);		
-
 	 	}
-
-	 	
 	});
-
 });
 
 
 app.get('/api/populated-areas', function(req, res) {
-
 	CoordinateModel.find({}, function(err, result) {
-
 		console.log("Total Coordinates in Database: ", result.length);
 		res.json(result);
-
 	});
-
 });
 
 
@@ -322,6 +462,160 @@ app.get('/api/hyperspacenode/', function(req, res) {
 });
 
 
+// var lng = -74;
+// var lat = 40.74;
+// var d = 100;
+// var point = {
+//     type: "Point",
+//     coordinates: [lng, lat]
+// };
+
+app.get('/api/hyperspacenode/closet', function(req, res) {
+
+	const maxDistance = 100.0;
+
+	// console.log("req.query: ", req.query);
+	const lng = parseFloat(req.query.lng);
+	const lat = parseFloat(req.query.lat);
+	console.log("longitude: ", lng);
+	console.log("latitude: ", lat);
+
+	if(!isNaN(lat) && !isNaN(lng)) {
+
+		const searchCoordinates = [lng, lat];
+
+		HyperspaceNodeModel.find({
+	      loc: {
+	        $near: searchCoordinates,
+	        $maxDistance: maxDistance
+	      }
+	    })
+	    .limit(30)
+		.exec(function(err, results) {
+		     // `posts` will be of length 20
+		    console.log("nearest hyperspace node error: ", err);
+	    	// console.log("nearest hyperspace node result: ", results);
+	    	console.log("searchCoordinates: ", searchCoordinates);
+	    	// const firstNode = results[0];
+	    	// const nodeCoordinates = [firstNode.lat, firstNode.lng];
+	    	const SearchPoint = new Point(lat, lng);
+	    	// const distanceBetweenLocationAndNode = distance(SearchPoint, nodeCoordinates);
+	    	// console.log("distance between points: ", distanceBetweenLocationAndNode);
+
+	    	console.log("SearchPoint: ", SearchPoint);
+	    	// console.log("nodeCoordinates: ", nodeCoordinates);
+	    	const nodesSortedByDistance = distanceBetweenNodesAndPoints(SearchPoint, results);
+	    	const firstNode = nodesSortedByDistance[0];
+	    	// console.log("nodesSortedByDistance: ", nodesSortedByDistance);
+	    	res.json([firstNode]);
+		});
+
+	
+	} else {
+
+		res.sendStatus(400);
+
+	}
+
+	// HyperspaceNodeModel.geoNear(
+	//     searchCoordinates, 																				
+	//     { maxDistance: maxDistance, spherical: false },
+	//     function(err, results, stats) {
+	//         // results is an array of result objects like:
+	//         // {dis: distance, obj: doc}
+
+	//         console.log("nearest hyperspace node error: ", err);
+	//     	console.log("nearest hyperspace node results: ", results);
+	//     	console.log("nearest hyperspace node stats: ", stats);
+	//     	res.json(results);
+	//     }
+	// );
+
+
+	// db.runCommand({
+	// 	geoNear: "hyperspacenodemodels",
+	// 	near: [ -74, 40.74 ], //req.query.latlng
+	// 	spherical: false,
+ //   });
+
+ 	// const lon = -74,
+ 	// const lat = 40.74;
+
+	// HyperspaceNodeModel.hyperspacenodemodels.geoNear(lon, lat, {spherical: false, maxDistance: d}, function(err, docs) {
+
+	// 	if(error) {
+	// 		console.log("error: ", error);
+	// 	} else {
+	// 		console.log("nodes near: ", docs);
+	// 	}
+
+	// 	if (docs.results.length == 1) {
+	// 		var distance = docs.results[0].dis;
+	// 		var match = docs.results[0].obj;
+
+	// 	}
+// 	// });
+
+// 	console.log("Looking for nearest distance!");
+
+// 	// HyperspaceNodeModel.geoNear(point, {spherical: false, maxDistance: d}, function(err, docs, stats) {
+//  //        console.log('Geo Results', docs);
+//  //        console.log('Geo stats', stats);
+//  //        if (err) {
+//  //            console.log('geoNear error:', err);
+//  //            res.json(res, 404, err);
+//  //        } else {
+//  //            res.json(res, 200, docs);
+//  //        }
+//  //    });
+
+//  //    HyperspaceNodeModel.find({
+// 	//     "$nearSphere": {
+// 	//         "$geometry": {
+// 	//             "type": "Point",
+// 	//             "coordinates": [parseFloat(req.params.lng), parseFloat(req.params.lat)] 
+// 	//         },
+// 	//         "$maxDistance": distanceInMeters
+// 	//     },
+// 	//     "loc.type": "Point"
+// 	// },function(err,docs) {
+
+// 	//    // The documents are also mongoose document objects as well
+// 	// });
+
+// 	HyperspaceNodeModel.aggregate(
+//     [
+//         { "$geoNear": {
+//             "near": {
+//                 "type": "Point",
+//                 // "coordinates": [parseFloat(req.params.lng), parseFloat(req.params.lat)]
+//                 "coordinates": [parseFloat(lng), parseFloat(lat)]
+
+//             },
+//             "distanceField": "distance",
+//             "maxDistance": d,
+//             "spherical": false,
+//             "query": { "loc.type": "Point" }
+//         }},
+//         { "$sort": { "distance": -1 } } // Sort nearest first
+//     ],
+//     function(err,docs) {
+//        // These are not mongoose documents, but you can always cast them
+// 		console.log('Geo Results', docs);
+//         if (err) {
+//             console.log('geoNear error:', err);
+//             res.json(res, 404, err);
+//         } else {
+//             res.json(res, 200, docs);
+//         }
+//     }
+// );
+
+});
+
+
+
+
 
 app.get('/api/hyperspacenode/search', function(req, res) {
 
@@ -343,10 +637,8 @@ app.get('/api/hyperspacenode/search', function(req, res) {
 	HyperspaceNodeModel.find(req.query, function(err, docs) {
 	 	console.log("hyperspace nodes found: ", docs);
 
-	 	if(err || docs.length === 0) {
-
-	 		res.sendStatus(404);
-
+	 	if(err) {
+	 		res.json(err);
 	 	} else {
 
 	 		res.json(docs);		
@@ -441,4 +733,5 @@ app.listen(serverPort, ip.address(), function () {
 	console.log('Example app listening on port http://' + ip.address() + ':' +  serverPort + '!');
 
 });
+
 
