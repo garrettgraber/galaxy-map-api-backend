@@ -152,6 +152,7 @@ if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo'
 
 console.log("MONGO: ", MONGO);
 console.log("NAVCOM: ", NAVCOM);
+console.log("TILES: ", TILES);
 
 mongoose.connect(MONGO);
 
