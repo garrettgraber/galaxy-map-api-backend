@@ -15,6 +15,7 @@
     "docker-links": "^1.0.2",
     "euclidean-distance": "^1.0.0",
     "express": "^4.14.1",
+    "finalhandler": "^1.0.6",
     "ip": "^1.1.4",
     "lodash": "^4.17.4",
     "moment-timezone": "^0.5.11",
