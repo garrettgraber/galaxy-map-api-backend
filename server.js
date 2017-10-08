@@ -143,8 +143,8 @@ if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo'
   	var NAVCOM = 'http://' + DatabaseLinks.navcom.hostname + ':' + DatabaseLinks.navcom.port;
 } else if (isProduction) {
 	var TILES = '';
-	var MONGO = 'mongodb://172.31.65.109:27017/test';
-	var NAVCOM = 'http://172.31.23.181:80'
+	var MONGO = 'mongodb://172.31.40.234:27017/test';
+	var NAVCOM = 'http://172.31.27.83:80';
 } else {
   var TILES = 'http://localhost:8110/tiles-leaflet-new/{z}/{x}/{y}.png';
 }
