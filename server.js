@@ -45,7 +45,9 @@ class HyperspaceNode {
 		loc,
 		system,
 		distanceFromPoint,
-		distanceFromPointNormalized
+		distanceFromPointNormalized,
+		xGalacticLong,
+		yGalacticLong
 	) {
 		this.lng = lng,
   		this.lat = lat,
@@ -55,6 +57,8 @@ class HyperspaceNode {
 		this.system = system;
 		this.distanceFromPoint = distanceFromPoint;
 		this.distanceFromPointNormalized = distanceFromPointNormalized;
+		this.xGalacticLong = xGalacticLong;
+		this.yGalacticLong = yGalacticLong;
 	}
 }
 
@@ -80,7 +84,9 @@ function distanceBetweenNodesAndPoints(SearchPoint, nodesArray) {
 			Node.loc,
 			Node.system,
 			distanceBetween,
-			distanceBetweenNormalized
+			distanceBetweenNormalized,
+			Node.xGalacticLong,
+			Node.yGalacticLong
 		);
 
 		// console.log("NodeToSend: ", NodeToSend);
@@ -184,6 +190,8 @@ const HyperspaceNodeSchema = new Schema({
     system         : String,
     lng            : { type : Number , "default" : null },
     lat            : { type : Number , "default" : null },
+    yGalacticLong  : { type : Number , "default" : null },
+    xGalacticLong  : { type : Number , "default" : null },
     hyperspaceLanes: { type : Array , "default" : [] },
     nodeId         : { type : Number, "default" : null },
     loc            : { type : Array, "default" : [] }
@@ -334,7 +342,6 @@ app.get('/', function(req, res) {
 	console.log("app.get fired...");
 	       
 	res.sendFile('index.html');
-
 
 });
 
@@ -495,7 +502,7 @@ app.get('/api/hyperspacenode/closet', function(req, res) {
 		.exec(function(err, results) {
 		     // `posts` will be of length 20
 		    console.log("nearest hyperspace node error: ", err);
-	    	// console.log("nearest hyperspace node result: ", results);
+	    	console.log("nearest hyperspace node result: ", results);
 	    	console.log("searchCoordinates: ", searchCoordinates);
 	    	// const firstNode = results[0];
 	    	// const nodeCoordinates = [firstNode.lat, firstNode.lng];
@@ -507,7 +514,7 @@ app.get('/api/hyperspacenode/closet', function(req, res) {
 	    	// console.log("nodeCoordinates: ", nodeCoordinates);
 	    	const nodesSortedByDistance = distanceBetweenNodesAndPoints(SearchPoint, results);
 	    	const firstNode = nodesSortedByDistance[0];
-	    	// console.log("nodesSortedByDistance: ", nodesSortedByDistance);
+	    	console.log("nodesSortedByDistance: ", nodesSortedByDistance);
 	    	res.json([firstNode]);
 		});
 
