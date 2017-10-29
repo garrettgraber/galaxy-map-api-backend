@@ -23,6 +23,7 @@
     "moment-timezone": "^0.5.13",
     "mongoose": "^4.11.12",
     "request": "^2.82.0",
+    "sntp": "^2.1.0",
     "tough-cookie": "^2.3.3",
     "urlencode": "^1.1.0"
   }
