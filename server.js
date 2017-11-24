@@ -11,6 +11,7 @@ const distance = require('euclidean-distance');
 const _ = require('lodash');
 
 
+
 class Point {
   constructor(
     lat,
