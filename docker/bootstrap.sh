@@ -6,13 +6,13 @@ rm -rf /root/app/node_modules
 ln -s /root/node_modules /root/app/node_modules
 echo "npm start the app...";
 
-echo "Current directory: $PWD"
+echo "Current directory 1: $PWD"
 ls
 
 cd /root/app
 npm ls --depth=0
 
-echo "Current directory: $PWD"
+echo "Current directory 2: $PWD"
 ls
 
 which npm
@@ -31,11 +31,11 @@ npm ls --depth=0
 chmod -R 0777 /tmp
 echo "Tailing the service..."
 # tail -f /root/app/app.log
-echo "Current directory: $PWD"
+echo "Current directory 3: $PWD"
 ls
 
 cd images
-echo "Current directory: $PWD"
+echo "Current directory 4: $PWD"
 ls;
 
 echo "bootstrap.sh end."

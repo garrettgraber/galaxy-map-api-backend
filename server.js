@@ -9,6 +9,7 @@ const urlencode = require('urlencode');
 const request = require('request');
 const distance = require('euclidean-distance');
 const _ = require('lodash');
+const Promise = require('bluebird');
 
 
 
@@ -232,6 +233,23 @@ const HyperLaneModel = mongoose.model('HyperLaneModel', HyperLaneSchema);
 
 
 
+const emptyCollections = async () => {
+	console.log("emptyCollections has fired..");
+	const databasePromiseArray = [
+		await PlanetModel.remove({}).exec(),
+		await CoordinateModel.remove({}).exec(),
+		await HyperLaneModel.remove({}).exec(),
+		await SectorModel.remove({}).exec(),
+		await HyperspaceNodeModel.remove({}).exec()
+	];
+	Promise.all(databasePromiseArray).then(() => {
+  	console.log("all the collections were cleared");
+  	// return {collectionsCleared: true};
+	}).catch(error => {
+	  console.log("error clearing all the collections");
+	});	
+};
+
 
 db.on('error', function(error) {
 	console.log("Error connecting: ", error);
@@ -343,6 +361,19 @@ app.get('/', function(req, res) {
 	res.sendFile('index.html');
 
 });
+
+
+
+
+app.get('/api/empty-collections', function(req, res) {
+	emptyCollections().then(data => {
+		// res.json(data);
+		res.sendStatus(200);
+	}).catch(error => {
+		res.sendStatus(404);
+	});
+});
+
 
 
 app.get('/api/has-location', function(req, res) {
