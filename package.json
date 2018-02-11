@@ -19,13 +19,16 @@
     "express": "^4.15.4",
     "finalhandler": "^1.0.6",
     "ip": "^1.1.5",
+    "latlon-geohash": "^1.1.0",
     "lodash": "^4.17.4",
     "moment": "^2.19.0",
     "moment-timezone": "^0.5.13",
     "mongoose": "^4.11.12",
     "request": "^2.82.0",
     "sntp": "^2.1.0",
+    "string-hash": "^1.1.3",
     "tough-cookie": "^2.3.3",
-    "urlencode": "^1.1.0"
+    "urlencode": "^1.1.0",
+    "uuid": "^3.2.1"
   }
 }
