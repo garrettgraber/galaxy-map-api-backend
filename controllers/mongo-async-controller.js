@@ -7,7 +7,6 @@ const Point = require('../data-classes/classes.js').Point;
 const Alphabets = require('../data-classes/alphabets.js');
 const Schema = mongoose.Schema;
 
-// console.log("DatabaseLinks: ", DatabaseLinks);
 console.log("NODE_ENV: ", process.env.NODE_ENV);
 const isDeveloping = process.env.NODE_ENV !== 'production';
 const isProduction = process.env.NODE_ENV === 'production';
@@ -19,28 +18,19 @@ if(DatabaseLinks.hasOwnProperty('mongo') && isDeveloping) {
 } else if (isProduction) {
 	var MONGO = 'mongodb://172.31.79.220:27017/test';
 } else {
-	// var TILES = 'http://localhost:8110/tiles-leaflet-new/{z}/{x}/{y}.png';
 	console.log("mongo failure!!!!");
 }
 
 
-// console.log("MONGO: ", MONGO);
-
-
 function connectToDatabase(cb) {
-
 	mongoose.connect(MONGO);
-
 	const db = mongoose.connection;
 	db.on('error', function(error) {
 		console.log('connection error:', error);
 		cb(error, {status: false, database:{}});
 	});
 	db.once('open', function() {
-	  // we're connected!
 	  	console.log("connected to mongo database ");
-
-
 	  	cb(null, {
 	  		status: true,
 	  		database: db,
@@ -49,7 +39,6 @@ function connectToDatabase(cb) {
 };
 
 const connectToMongo = Promise.promisify(connectToDatabase);
-
 
 const PlanetSchema = new Schema({
     system         : String,
@@ -163,45 +152,6 @@ const createHyperspaceNodeAsync = async (HyperspaceNodeCurrent) => {
 	}
 };
 
-// const createHyperspaceNodeAsync = async (HyperspaceNodeCurrent) => {
-
-// 	try {
-// 		const hyperspaceNodeData = await HyperspaceNodeModel.find({
-// 			lat: HyperspaceNodeCurrent.lat,
-// 			lng: HyperspaceNodeCurrent.lng
-// 		}).exec();
-
-// 		if(hyperspaceNodeData.length == 0) {
-// 			return await HyperspaceNodeModel.create(HyperspaceNodeCurrent);
-// 		} else {
-// 			const result = hyperspaceNodeData[0];
-
-// 			// if(result.system === undefined) {
-// 			// 	console.log("\nresult.system: ", result.system);
-// 			// 	console.log("HyperspaceNodeCurrent: ", HyperspaceNodeCurrent);
-// 			// }
-// 			// console.log("Hyperspace Lane: ", HyperspaceNodeCurrent.hyperspaceLanes);
-
-// 			const foundHyperspaceLane = HyperspaceNodeCurrent.hyperspaceLanes[0];
-// 			let updatedHyperlanes = [];
-// 			if(!result.hyperspaceLanes.includes(foundHyperspaceLane) && result.system === undefined) {
-// 				updatedHyperlanes = HyperspaceNodeCurrent.hyperspaceLanes.concat(result.hyperspaceLanes);
-// 				return await HyperspaceNodeModel.findOneAndUpdate({system: result.system}, {hyperspaceLanes: updatedHyperlanes}, {new: true}).exec();
-// 			} else {
-// 				if(result.system !== HyperspaceNodeCurrent.system) {
-
-// 					return result.system;
-// 				} else {
-// 					return ;
-// 				}
-// 			}
-// 		}
-// 	} catch(err) {
-// 		// console.log("error creating hyperspace node: ", err);
-// 		throw new Error(400);
-// 	}
-// };
-
 const findHyperspaceNodeAndUpdate = async (SearchItem, UpdateItem) => {
 	try {
 		return await HyperspaceNodeModel.findOneAndUpdate(SearchItem, UpdateItem, {new: true}).exec();
@@ -231,7 +181,7 @@ const findOneHyperspaceNodeAsync = async (SearchItem) => {
 
 const findNearestHyperspaceNodes = async (latQuery, lngQuery) => {
 	try {
-		// return await HyperspaceNodeModel.find({}).exec();
+
 		const maxDistance = 100.0;
 		// console.log("req.query: ", req.query);
 		const lng = parseFloat(lngQuery);
@@ -250,21 +200,11 @@ const findNearestHyperspaceNodes = async (latQuery, lngQuery) => {
 	    .limit(30)
 			.exec();
 
-	  	console.log("nearest hyperspace node result: ", nearestNodes);
-	  	// console.log("searchCoordinates: ", searchCoordinates);
-	  	// const firstNode = results[0];
-	  	// const nodeCoordinates = [firstNode.lat, firstNode.lng];
 	  	const SearchPoint = new Point(lat, lng);
-	  	// const distanceBetweenLocationAndNode = distance(SearchPoint, nodeCoordinates);
-	  	// console.log("distance between points: ", distanceBetweenLocationAndNode);
-	  	// console.log("SearchPoint: ", SearchPoint);
-	  	// console.log("nodeCoordinates: ", nodeCoordinates);
 	  	const nodesSortedByDistance = SearchPoint.distanceBetweenPointAndNodes(nearestNodes);
 	  	const NearestNode = nodesSortedByDistance[0];
-
 	  	console.log("Nearest Node: ", NearestNode);
 
-	  	// console.log("nodesSortedByDistance: ", nodesSortedByDistance);
 	  	return [ NearestNode ];
 		} else {
 			return [];

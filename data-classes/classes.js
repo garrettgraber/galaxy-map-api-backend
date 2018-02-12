@@ -137,32 +137,10 @@ class HyperSpaceLane {
 		this.coordinates = coordinateStringToArray(coordinates);
 	}
 
-
-	// reverseCoordinatesLatLng(coordinatesData) {
-	// 	const coordiantes = coordinatesData[0];
-	// 	console.log("coordinates array: ", coordiantes);
-	// 	const latBefore = coordiantes[0];
-	// 	// const coordinatesLatLng = _.map(coordinatesLngLat, function(el) {
-	// 	// 	console.log("el: ", el);
-	// 	// 	el.reverse();
-	// 	// 	return el;
-	// 	// });
-
-	// 	for(let k of coordiantes) { 
-	// 		k.reverse();
-	// 	}
-	// 	const latAfter = coordiantes[0];
-	// 	console.log("Before and after the same: ", (latBefore === latAfter)? true : false);
-	// 	return coordiantes;
-	// }
-
-
 	reverseLatLng(coordinatesData) {
 		const latBefore = coordinatesData[0][1];
 		for(let k of coordinatesData) {
-			// console.log("k before: ", k);
 			k.reverse();
-			// console.log("k after: ", k);
 		}
 		const latAfter = coordinatesData[0][0];
 		// console.log("Before and after the same: ", (latBefore === latAfter)? true : false);
@@ -242,9 +220,9 @@ function distanceBetweenPointAndNodes(normalizedCoordinates, nodesArray) {
 		});
 		const NodeToSend = new HyperSpaceNode(NodeOptions);
 		const outputText = "Distance from " + NodeToSend.system + " : " + NodeToSend.distanceFromPoint;
-		console.log(outputText);
+		// console.log(outputText);
 		const outputTextNormalized = "Distance from " + NodeToSend.system + " : " + NodeToSend.distanceFromPointNormalized + " normalized";
-		console.log(outputTextNormalized);
+		// console.log(outputTextNormalized);
 		nodesArraySorted.push(NodeToSend);
 	}
 

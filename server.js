@@ -5,14 +5,11 @@ const express = require('express'),
 DatabaseLinks = require('docker-links').parseLinks(process.env),
 			request = require('request');
 
-const Point = require('./data-classes/classes.js').Point;
-const HyperSpaceNode = require('./data-classes/classes.js').HyperSpaceNode;
 
-// console.log("DatabaseLinks: ", DatabaseLinks);
 console.log("NODE_ENV: ", process.env.NODE_ENV);
 const isDeveloping = process.env.NODE_ENV !== 'production';
 const isProduction = process.env.NODE_ENV === 'production';
-console.log("isProduction: ", isProduction);
+console.log("Is Production: ", isProduction);
 
 if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo') && isDeveloping) {
 	var TILES = 'http://' + DatabaseLinks.tiles.hostname + ':' + DatabaseLinks.tiles.port + '/tiles-leaflet-new/{z}/{x}/{y}.png';
@@ -50,23 +47,6 @@ MongoController.connectToMongo().then(mongoConnectionResult => {
 const serverPort = 8103;
 const app = express();
 
-// const isDeveloping = (process.env.NODE_ENV !== ‘production’)? true : false;
-
-// if (isDeveloping) {
-//   let webpack = require('webpack');
-//   let webpackMiddleware = require('webpack-dev-middleware');
-//   let webpackHotMiddleware = require('webpack-hot-middleware');
-//   let config = require('./webpack.config.js');
-//   ...
-//   // serve the content using webpack
-//   app.use(middleware);
-//   app.use(webpackHotMiddleware(compiler));
-//   ...
-// } else {
-//   // serve the content using static directory
-//   app.use(express.static(staticPath));
-// }
-
 // app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -78,13 +58,6 @@ app.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	next();
 });
-
-
-// app.use(cors());
-// const corsOptions = {
-//   origin: api
-// }
-// app.use(cors(corsOptions))
 
 app.get('/', function(req, res) {
 	console.log("Loading index");
@@ -123,52 +96,9 @@ app.get(HyperspaceNodeService.searchNodesPath, HyperspaceNodeService.searchNodes
 
 app.get(HyperspaceNodeService.closetNodeToSystemPath, HyperspaceNodeService.closetNodeToSystem);
 
+app.post(HyperspaceJumpService.shortestJumpPath, HyperspaceJumpService.calculateShortestJump);
 
-// app.get(HyperspaceJumpService.shortestJumpPath, HyperspaceJumpService.calculateShortestJump);
-
-// app.get(HyperspaceJumpService.multipleJumpsPath, HyperspaceJumpService.calculateMultipleJumps);
-
-app.post('/api/hyperspace-jump/calc-shortest', function(req, res) {
-	console.log("calculate hyperspace jump: ", req.body);
-	const JumpData = req.body;
-	const options = {
-	  method: 'post',
-	  body: JumpData,
-	  json: true,
-	  url: NAVCOM + '/hyperspace-jump/calc-shortest'
-	}
-
-	request(options, function (error, response, body) {
-		if(error) {
-			console.log("error getting data from navi computer: ", error);
-			res.sendStatus(500);
-		} else {
-			console.log("Found hyperspace jump, sending!!");
-			res.json(body);
-		}
-	});    
-});
-
-app.post('/api/hyperspace-jump/calc-many', function(req, res) {
-	console.log("calculate hyperspace jump: ", req.body);
-	const JumpData = req.body;
-	const options = {
-	  method: 'post',
-	  body: JumpData,
-	  json: true,
-	  url: NAVCOM + '/hyperspace-jump/calc-many'
-	}
-
-	request(options, function (error, response, body) {
-		if(error) {
-			console.log("error getting data from navi computer: ", error);
-			res.sendStatus(500);
-		} else {
-			console.log("Found hyperspace jump, sending!!");
-			res.json(body);
-		}
-	});    
-});
+app.post(HyperspaceJumpService.multipleJumpsPath, HyperspaceJumpService.calculateMultipleJumps);
 
 app.get('/api/tile-server-url', function(req, res) {
   console.log("tile server url: ", TILES);

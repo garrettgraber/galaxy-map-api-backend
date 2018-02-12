@@ -18,7 +18,6 @@ class HyperSpaceNodeRouterService {
 		});
 	}
 
-
 	searchNodes(req, res, next) {
 		console.log("Search for Hyperspace Nodes: ", req.query);
 		if(req.query.hasOwnProperty('nodeId')) {
