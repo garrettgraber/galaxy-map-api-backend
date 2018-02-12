@@ -2,6 +2,8 @@ const request = require('request');
 const DatabaseLinks = require('docker-links').parseLinks(process.env);
 
 const isDeveloping = process.env.NODE_ENV !== 'production';
+const isProduction = process.env.NODE_ENV === 'production';
+
 
 if(DatabaseLinks.hasOwnProperty('navcom') && isDeveloping) {
 	var NAVCOM = 'http://' + DatabaseLinks.navcom.hostname + ':' + DatabaseLinks.navcom.port;
