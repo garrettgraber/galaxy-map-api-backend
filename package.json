@@ -25,6 +25,7 @@
     "moment-timezone": "^0.5.13",
     "mongoose": "^4.11.12",
     "request": "^2.82.0",
+    "request-promise": "^4.2.2",
     "sntp": "^2.1.0",
     "string-hash": "^1.1.3",
     "tough-cookie": "^2.3.3",

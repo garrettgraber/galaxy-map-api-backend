@@ -96,6 +96,19 @@ app.get(HyperspaceNodeService.searchNodesPath, HyperspaceNodeService.searchNodes
 
 app.get(HyperspaceNodeService.closetNodeToSystemPath, HyperspaceNodeService.closetNodeToSystem);
 
+app.get(HyperspaceNodeService.connectedToCoruscantPath, HyperspaceNodeService.connectedToCoruscant);
+
+app.get(HyperspaceNodeService.connectedToCsillaPath, HyperspaceNodeService.connectedToCsilla);
+
+app.get(HyperspaceNodeService.systemsConnectedQueryPath, HyperspaceNodeService.systemsConnectedQuery);
+
+app.get(HyperspaceNodeService.systemsUnConnectedQueryPath, HyperspaceNodeService.systemsUnConnectedQuery);
+
+app.get(HyperspaceNodeService.pointConnectedToCoruscantPath, HyperspaceNodeService.pointConnectedToCoruscant);
+
+app.get(HyperspaceNodeService.pointConnectedToCsillaPath, HyperspaceNodeService.pointConnectedToCsilla);
+
+
 app.post(HyperspaceJumpService.shortestJumpPath, HyperspaceJumpService.calculateShortestJump);
 
 app.post(HyperspaceJumpService.multipleJumpsPath, HyperspaceJumpService.calculateMultipleJumps);
