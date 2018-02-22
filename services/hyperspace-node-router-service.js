@@ -139,7 +139,6 @@ class HyperSpaceNodeRouterService {
 		});
 	}
 
-
 	systemsUnConnectedQuery(req, res, next) {
 		systemsUnConnected(req.query.systems).then(docs => {
 			res.json(docs);

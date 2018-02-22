@@ -113,6 +113,8 @@ app.post(HyperspaceJumpService.shortestJumpPath, HyperspaceJumpService.calculate
 
 app.post(HyperspaceJumpService.multipleJumpsPath, HyperspaceJumpService.calculateMultipleJumps);
 
+app.post(HyperspaceJumpService.minimumJumpPath, HyperspaceJumpService.calculateMinimumJumps);
+
 app.get('/api/tile-server-url', function(req, res) {
   console.log("tile server url: ", TILES);
   res.json({tileServerUrl: TILES});
