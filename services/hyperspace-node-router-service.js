@@ -133,6 +133,7 @@ class HyperSpaceNodeRouterService {
 
 	systemsConnectedQuery(req, res, next) {
 		systemsConnected(req.query.systems).then(docs => {
+			console.log("connected docs: ", docs);
 			res.json(docs);
 		}).catch(err => {
 			res.sendStatus(404);
@@ -312,7 +313,11 @@ async function systemsConnected(systems) {
 
 		const systemsConnectedToCoruscant = systemAConnectedToCoruscant && systemBConnectedToCoruscant;
 		const systemsConnectedToCsilla = systemAConnectedToCsilla && systemBConnectedToCsilla;
-		return (systemsConnectedToCoruscant || systemsConnectedToCsilla)? true : false;
+		const systemsConnectedStatus = (systemsConnectedToCoruscant || systemsConnectedToCsilla)? true : false;
+
+		return {
+			connected: systemsConnectedStatus
+		};
 	} catch(err) {
 		throw new Error(err);
 	}
