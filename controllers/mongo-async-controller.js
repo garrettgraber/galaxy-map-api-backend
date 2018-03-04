@@ -41,34 +41,36 @@ function connectToDatabase(cb) {
 const connectToMongo = Promise.promisify(connectToDatabase);
 
 const PlanetSchema = new Schema({
-    system         : String,
-    sector         : { type : Array , "default" : [] },
-    region         : String,
-    coordinates    : String,
-    xGalactic      : Number,
-    yGalactic      : Number,
-    xGalacticLong  : Number,
-    yGalacticLong  : Number,
-    hasLocation    : { type : Boolean, "default": false },
-    LngLat         : { type : Array , "default" : [] },
-    lng            : { type : Number , "default" : null },
-    lat            : { type : Number , "default" : null },
-    zoom		   		 : Number,
-    link           : String
+  system         : String,
+  sector         : { type : Array , "default" : [] },
+  region         : String,
+  coordinates    : String,
+  xGalactic      : Number,
+  yGalactic      : Number,
+  xGalacticLong  : Number,
+  yGalacticLong  : Number,
+  hasLocation    : { type : Boolean, "default": false },
+  LngLat         : { type : Array , "default" : [] },
+  lng            : { type : Number , "default" : null },
+  lat            : { type : Number , "default" : null },
+  zoom		   		 : Number,
+  link           : String
 });
 PlanetSchema.set('autoIndex', true);
 const PlanetModel = mongoose.model('PlanetModel', PlanetSchema);
 
 const HyperspaceNodeSchema = new Schema({
-    system         : String,
-    lng            : { type : Number , "default" : null },
-    lat            : { type : Number , "default" : null },
-    yGalacticLong  : { type : Number , "default" : null },
-    xGalacticLong  : { type : Number , "default" : null },
-    hyperspaceLanes: { type : Array , "default" : [] },
-    nodeId         : { type : Number, "default" : null },
-    loc            : { type : Array, "default" : [] },
-    geoHash        : String
+  system         : String,
+  lng            : { type : Number , "default" : null },
+  lat            : { type : Number , "default" : null },
+  yGalacticLong  : { type : Number , "default" : null },
+  xGalacticLong  : { type : Number , "default" : null },
+  hyperspaceLanes: { type : Array , "default" : [] },
+  nodeId         : { type : Number, "default" : null },
+  loc            : { type : Array, "default" : [] },
+  geoHash        : String,
+  zoom					 : Number,
+  emptySpace     : Boolean
 });
 HyperspaceNodeSchema.set('autoIndex', true);
 HyperspaceNodeSchema.index({ loc: '2d' });

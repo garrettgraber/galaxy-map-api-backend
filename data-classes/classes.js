@@ -173,6 +173,8 @@ class HyperSpaceNode {
 		this.xGalacticLong = Options.xGalacticLong;
 		this.yGalacticLong = Options.yGalacticLong;
 		this.geoHash = Options.geoHash;
+		this.zoom = Options.zoom;
+		this.emptySpace = Options.emptySpace;
 	}
 };
 
