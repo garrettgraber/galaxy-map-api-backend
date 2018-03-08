@@ -80,13 +80,19 @@ app.get(PlanetService.searchPlanetsPath, PlanetService.searchPlanets);
 
 app.get(PlanetService.planetsWithNoLocationPath, PlanetService.planetsWithNoLocation);
 
+
 app.get(CoordinatesService.allCoordinatesPath, CoordinatesService.allCoordinates);
 
+
 app.get(SectorsService.allSectorsPath, SectorsService.allSectors);
+
+app.get(SectorsService.findSectorPath, SectorsService.findSector);
+
 
 app.get(HyperspaceLaneService.allLanesPath, HyperspaceLaneService.allLanes);
 
 app.get(HyperspaceLaneService.searchLanesPath, HyperspaceLaneService.searchLanes);
+
 
 app.get(HyperspaceNodeService.allNodesPath, HyperspaceNodeService.allNodes);
 

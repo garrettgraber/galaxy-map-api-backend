@@ -84,6 +84,8 @@ const CoordinateModel = mongoose.model('CoordinateModel', CoordinateSchema);
 
 const SectorSchema = new Schema({
 	name: String,
+	coordinates: { type : Array , "default" : [] },
+	link: { type : String , "default" : '' }
 });
 SectorSchema.set('autoIndex', true);
 const SectorModel = mongoose.model('SectorModel', SectorSchema);
@@ -428,6 +430,14 @@ const allSectors = async () => {
 	}
 };
 
+const findSector = async (SearchItem) => {
+	try {
+		return await SectorModel.find(SearchItem).exec();
+	} catch(err) {
+		throw new Error(404);
+	}
+}
+
 const createCoordinate = async (coordinateValue) => {
 	try {
 		return await CoordinateModel.create({coordinates: coordinateValue});
@@ -494,6 +504,7 @@ module.exports = {
 	createSector: createSector,
 	createCoordinate: createCoordinate,
 	findHyperspaceLaneAndUpdateAsync: findHyperspaceLaneAndUpdateAsync,
-	findNearestHyperspaceNodes: findNearestHyperspaceNodes
+	findNearestHyperspaceNodes: findNearestHyperspaceNodes,
+	findSector: findSector
 };
 
