@@ -238,6 +238,165 @@ function distanceBetweenPointAndNodes(normalizedCoordinates, nodesArray) {
 module.exports.Point = Point;
 
 
+class HyperspaceRoute {
+  constructor(Options) {
+    this.lanes = Options.lanes;
+    this.name = this.lanes[0].name;
+    this.link = this.lanes[0].link;
+  }
+
+  nodesAreTheSame(node1, node2) {
+    return node1[0] === node2[0] && node1[1] === node2[1];
+  }
+
+  getNodesForRoute() {
+    const nodesArray = [];
+    for(let lane of this.lanes) {
+      nodesArray.push(lane.startCoordsLngLat);
+      nodesArray.push(lane.endCoordsLngLat);
+    }
+    return nodesArray;
+  }
+
+  findExtremityNodes() {
+    const extremityNodes = [];
+    for(let currentNode of this.getNodesForRoute()) {
+      const nodesFound = _.filter(this.getNodesForRoute(), node => {
+        return this.nodesAreTheSame(node, currentNode);
+      });
+      if(nodesFound.length === 1) {
+        extremityNodes.push(currentNode);
+      }
+    }
+    return extremityNodes;
+  }
+
+  findInternalNodes() {
+    const extremityNodes = this.findExtremityNodes();
+    const firstNode = extremityNodes[0];
+    const secondNode = extremityNodes[1];
+    let rawInternalArray = []
+    for(let node of this.getNodesForRoute()) {
+      const sameAsFirstNode = this.nodesAreTheSame(node, firstNode);
+      const sameAsSecondNode = this.nodesAreTheSame(node, secondNode);
+      if(!sameAsFirstNode && !sameAsSecondNode) {
+        rawInternalArray.push(node);
+      }
+    }
+    const internalNodes = [];
+    for(let currentNode of rawInternalArray) {
+      const nodesFound = _.filter(rawInternalArray, node => {
+        return this.nodesAreTheSame(node, currentNode);
+      });
+      const nodesFoundInInternal = _.filter(internalNodes, node => {
+        return this.nodesAreTheSame(node, currentNode);
+      });
+      if(nodesFoundInInternal.length === 0 && nodesFound.length > 1) {
+        internalNodes.push(currentNode);
+      }
+    }
+    return internalNodes;
+  }
+
+  buildCoordinatesArray() {
+    let currentTick = 0;
+    let orderedCoordinates = [];
+    const extremityNodes = this.findExtremityNodes();
+    let internalNodes = this.findInternalNodes();
+    const startNode = extremityNodes[0];
+    const endNode = extremityNodes[1];
+    let nextNode = startNode;
+    let previousNode = [null, null];
+    while (!this.nodesAreTheSame(nextNode, endNode)) {
+      currentTick++;
+      console.log("\nCurrent tick: ", currentTick);
+      console.log("nextNode: ", nextNode);
+      console.log("orderedCoordinates: ", orderedCoordinates.length);
+      const CompletedTick = this.findNextNode(nextNode, previousNode, orderedCoordinates);
+      previousNode = nextNode;
+      nextNode = CompletedTick.nextNode;
+      orderedCoordinates = CompletedTick.orderedCoordinates;
+    }
+    console.log("End of Build. Total coordinates: ", orderedCoordinates.length);
+    console.log("Extremity Nodes: ", this.findExtremityNodes());
+    console.log("Internal Nodes: ", this.findInternalNodes());
+    console.log("Valid number of coordinates: ", countNumberOfCoordinates(this.lanes) === orderedCoordinates.length);
+    return orderedCoordinates;
+  }
+
+  findNextNode(currentNode, previousNode, orderedCoordinates) {
+    const laneFound = _.filter(this.lanes, lane => this.nodesAreTheSame(currentNode, lane.startCoordsLngLat) && !this.nodesAreTheSame(previousNode, lane.endCoordsLngLat));
+    const laneFoundReversed = _.filter(this.lanes, lane => this.nodesAreTheSame(currentNode, lane.endCoordsLngLat) && !this.nodesAreTheSame(previousNode, lane.startCoordsLngLat));
+    const currentNodeAndStartEqual = (laneFound.length > 0)? true : false;
+    const currentNodeAndEndEqual = (laneFoundReversed.length > 0)? true : false;
+    let nextNode = [];
+    if(currentNodeAndStartEqual) {
+      const LaneFound = laneFound[0];
+      let coordinatesCopy = copyCoordinatesArray(LaneFound.coordinates);
+      if(orderedCoordinates.length > 0) {
+	      const lastInOrdered = orderedCoordinates[ orderedCoordinates.length - 1 ];
+	      const firstInLane = coordinatesCopy[0];
+	      if(this.nodesAreTheSame(lastInOrdered, firstInLane)) { orderedCoordinates.splice(-1,1) }
+      }
+      orderedCoordinates = orderedCoordinates.concat(coordinatesCopy);
+      nextNode = LaneFound.endCoordsLngLat;
+    }
+    if(currentNodeAndEndEqual) {
+      const LaneFound = laneFoundReversed[0];
+      const start = LaneFound.startCoordsLngLat;;
+      let coordinatesCopy = copyCoordinatesArray(LaneFound.coordinates);
+      coordinatesCopy.reverse();
+      if(orderedCoordinates.length > 0) {
+	      const lastInOrdered = orderedCoordinates[ orderedCoordinates.length - 1 ];
+	      const firstInLane = coordinatesCopy[0];
+	      if(this.nodesAreTheSame(lastInOrdered, firstInLane)) { orderedCoordinates.splice(-1,1) }
+      }
+      orderedCoordinates = orderedCoordinates.concat(coordinatesCopy);
+      nextNode = LaneFound.startCoordsLngLat;
+    }
+    return {
+      nextNode: nextNode,
+      orderedCoordinates: orderedCoordinates
+    };
+  }
+}
+
+
+module.exports.HyperspaceRoute = HyperspaceRoute;
+
+
+function copyCoordinatesArray(coordinatesArray) {
+  const copyiedArray = [];
+  for(let coordinate of coordinatesArray) {
+    const lng = coordinate[0];
+    const lat = coordinate[1];
+    copyiedArray.push([lng, lat]);
+  }
+  return copyiedArray;
+}
+
+function nodesAreTheSame(node1, node2) { return node1[0] === node2[0] && node1[1] === node2[1] }
+
+function findNodeInCoordinatesArray(currentNode, coordinatesArray) {
+	for(let coordinate of coordinatesArray) {
+		if(nodesAreTheSame(coordinate, currentNode)) { return true }
+	}
+	return false;	
+}
+
+function countNumberOfCoordinates(lanesArray) {
+  let numberOfCoordinates = 1;
+  for(let lane of lanesArray) {
+    numberOfCoordinates += lane.coordinates.length - 1;
+  }
+  return numberOfCoordinates;
+}
+
+
+
+
+
+
 function getGalacticYFromLatitude(latitude) {
   return  (-3.07e-19*(latitude**12)) + (-1.823e-18*(latitude**11)) + (4.871543e-15*(latitude**10)) + (4.1565807e-14*(latitude**9)) + (-2.900986202e-11 * (latitude**8)) + (-1.40444283864e-10*(latitude**7)) + (7.9614373223054e-8*(latitude**6)) + (7.32976568692443e-7*(latitude**5)) + (-0.00009825374539548058*(latitude**4)) + (0.005511093818675318*(latitude**3)) + (0.04346753629461727 * (latitude**2)) + (111.30155374684914 * latitude);
 }

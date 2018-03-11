@@ -227,7 +227,6 @@ const closetNodeToSystem = async (SearchItem) => {
 		console.log("error updating hyperspace node: ", err);
 		throw new Error(400);
 	}
-
 };
 
 const findHyperspaceNodeOfPlanetAsync = async (SearchItem) => {
@@ -366,6 +365,14 @@ const getAllHyperspaceLanes = async () => {
 	}
 };
 
+const getHyperspaceLanesNames = async () => {
+	try {
+		return await HyperLaneModel.find().distinct('name').exec();
+	} catch(err) {
+		console.log("error getting all hyperspace lane names: ", err);
+	}
+};
+
 const totalHyperspaceNodes = async () => {
 	try {
 		return await HyperspaceNodeModel.count({}).exec();
@@ -501,6 +508,7 @@ module.exports = {
 	createHyperspaceLane: createHyperspaceLane,
 	totalHyperspaceLanes: totalHyperspaceLanes,
 	getAllHyperspaceLanes: getAllHyperspaceLanes,
+	getHyperspaceLanesNames: getHyperspaceLanesNames,
 	createSector: createSector,
 	createCoordinate: createCoordinate,
 	findHyperspaceLaneAndUpdateAsync: findHyperspaceLaneAndUpdateAsync,
