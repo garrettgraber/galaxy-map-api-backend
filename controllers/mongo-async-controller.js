@@ -337,7 +337,8 @@ const findPlanetAndUpdate = async (SearchItem, UpdateItem) => {
 	try {
 		return await PlanetModel.findOneAndUpdate(SearchItem, UpdateItem, {new: true}).exec();
 	} catch(err) {
-		console.log("error getting all planets: ", err);
+		console.log("error updating planet: ", SearchItem.system);
+		console.log("error: ", err);
 	}
 };
 

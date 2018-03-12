@@ -258,6 +258,25 @@ class HyperspaceRoute {
     return nodesArray;
   }
 
+  validateHyperspaceRoute() {
+
+    const extremityNodes = this.findExtremityNodes();
+    const allNodes = this.getNodesForRoute();
+    console.log("\nExtremityNodes: ", extremityNodes);
+    console.log("Nodes: ", allNodes.length);
+    console.log("Nodes no duplicates: ", removeDuplicateNodes(allNodes).length);
+    console.log("Lanes length: ", this.lanes.length);
+    const invalidNumberOfNodesByLanes = removeDuplicateNodes(allNodes).length !== this.lanes.length + 1;
+    const invalidNumberOfExtremityNodes = extremityNodes.length !== 2;
+    if(invalidNumberOfNodesByLanes || invalidNumberOfExtremityNodes) {
+      console.log("Invalid hyperspace route: ", this.lanes[0].name);
+      return false;
+    } else {
+      console.log("Valid hyperspace route: ", this.lanes[0].name);
+      return true;
+    }
+  }
+
   findExtremityNodes() {
     const extremityNodes = [];
     for(let currentNode of this.getNodesForRoute()) {
@@ -321,7 +340,8 @@ class HyperspaceRoute {
     console.log("Extremity Nodes: ", this.findExtremityNodes());
     console.log("Internal Nodes: ", this.findInternalNodes());
     console.log("Valid number of coordinates: ", countNumberOfCoordinates(this.lanes) === orderedCoordinates.length);
-    return orderedCoordinates;
+    const orderedCoordinatesLatLng = reverseToLatLng(orderedCoordinates);
+    return orderedCoordinatesLatLng;
   }
 
   findNextNode(currentNode, previousNode, orderedCoordinates) {
@@ -392,10 +412,49 @@ function countNumberOfCoordinates(lanesArray) {
   return numberOfCoordinates;
 }
 
+function reverseToLatLng(lanesArray) {
+	const latLngArray = [];
+	for(let lane of lanesArray) {
+		lane.reverse();
+		latLngArray.push(lane);
+	}
+	return latLngArray;
+}
 
+function removeDuplicateNodes(nodesArray) {
+  const distinctNodesArray = [];
+  for(let currentNode of nodesArray) {
+    const nodesFoundInArray = _.filter(nodesArray, node => {
+      return nodesAreTheSame(node, currentNode);
+    });
+    const nodesFoundInDuplicatesArray = _.filter(distinctNodesArray, node => {
+      return nodesAreTheSame(node, currentNode);
+    });
+    if(nodesFoundInArray.length > 0 && nodesFoundInDuplicatesArray.length === 0) {
+      distinctNodesArray.push(currentNode);
+    }
+  }
+  return distinctNodesArray;
+}
 
-
-
+function validateHyperspaceRoute(lanes) {
+  const B =  new HyperspaceRoute({lanes: lanes});
+  const BExtremityNodes = B.findExtremityNodes();
+  const BNodes = B.getNodesForRoute();
+  console.log("\nExtremityNodes: ", BExtremityNodes);
+  console.log("Nodes: ", BNodes.length);
+  console.log("Nodes no duplicates: ", removeDuplicateNodes(BNodes).length);
+  console.log("Lanes length: ", lanes.length);
+  const invalidNumberOfNodesByLanes = removeDuplicateNodes(BNodes).length !== lanes.length + 1;
+  const invalidNumberOfExtremityNodes = BExtremityNodes.length !== 2;
+  if(invalidNumberOfNodesByLanes || invalidNumberOfExtremityNodes) {
+    console.log("Invalid hyperspace route: ", lanes[0].name);
+    return false;
+  } else {
+    console.log("Valid hyperspace route: ", lanes[0].name);
+    return true;
+  }
+}
 
 function getGalacticYFromLatitude(latitude) {
   return  (-3.07e-19*(latitude**12)) + (-1.823e-18*(latitude**11)) + (4.871543e-15*(latitude**10)) + (4.1565807e-14*(latitude**9)) + (-2.900986202e-11 * (latitude**8)) + (-1.40444283864e-10*(latitude**7)) + (7.9614373223054e-8*(latitude**6)) + (7.32976568692443e-7*(latitude**5)) + (-0.00009825374539548058*(latitude**4)) + (0.005511093818675318*(latitude**3)) + (0.04346753629461727 * (latitude**2)) + (111.30155374684914 * latitude);
