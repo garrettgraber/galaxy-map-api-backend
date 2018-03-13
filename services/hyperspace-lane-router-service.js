@@ -3,6 +3,16 @@ const _ = require('lodash');
 const MongoController = require('../controllers/mongo-async-controller.js');
 const HyperspaceRoute = require('../data-classes/classes.js').HyperspaceRoute;
 
+const SanctuaryPipeline = {
+	name: "Sanctuary Pipeline",
+  link: "http://starwars.wikia.com/wiki/Sanctuary_Pipeline",
+  coordinates: [
+  	[-71.906346, 21.024221],
+  	[-67.311466, -46.247859]
+  ]
+};
+
+
 
 class HyperSpaceLaneRouterService {
   constructor() {
@@ -41,16 +51,16 @@ class HyperSpaceLaneRouterService {
 			if(docs.length === 0) {
 				res.sendStatus(404);
 			} else {
-
 				const allLanesArrayForDropdown = _.map(docs, doc => {
 					return {
 						value: doc,
 						label: doc
 					}
 				});
-
-				console.log("allLanesArrayForDropdown: ", allLanesArrayForDropdown);
-
+				allLanesArrayForDropdown.push({
+					value: "Sanctuary Pipeline",
+					label: "Sanctuary Pipeline"
+				});
 				res.json(allLanesArrayForDropdown);
 			}
 		}).catch(err => {
@@ -60,6 +70,7 @@ class HyperSpaceLaneRouterService {
 
 	searchAndBuildRoute(req, res, next) {
 		console.log("Hyperspace Lanes Search and build: ", req.query);
+		if(req.query.name === SanctuaryPipeline.name) { res.json(SanctuaryPipeline) }
 		MongoController.searchHyperspaceLanes(req.query).then(docs => {
 			if(docs.length === 0) {
 				res.sendStatus(404);

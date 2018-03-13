@@ -185,14 +185,9 @@ const findOneHyperspaceNodeAsync = async (SearchItem) => {
 
 const findNearestHyperspaceNodes = async (latQuery, lngQuery) => {
 	try {
-
 		const maxDistance = 100.0;
-		// console.log("req.query: ", req.query);
 		const lng = parseFloat(lngQuery);
 		const lat = parseFloat(latQuery);
-		// console.log("longitude: ", lng);
-		// console.log("latitude: ", lat);
-
 		if(!isNaN(lat) && !isNaN(lng)) {
 			const searchCoordinates = [lng, lat];
 			const nearestNodes = await HyperspaceNodeModel.find({
@@ -208,7 +203,6 @@ const findNearestHyperspaceNodes = async (latQuery, lngQuery) => {
 	  	const nodesSortedByDistance = SearchPoint.distanceBetweenPointAndNodes(nearestNodes);
 	  	const NearestNode = nodesSortedByDistance[0];
 	  	console.log("Nearest Node: ", NearestNode);
-
 	  	return [ NearestNode ];
 		} else {
 			return [];
