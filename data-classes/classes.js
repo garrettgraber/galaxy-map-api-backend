@@ -172,6 +172,9 @@ class HyperSpaceNode {
 		this.distanceFromPointNormalized = Options.distanceFromPointNormalized;
 		this.xGalacticLong = Options.xGalacticLong;
 		this.yGalacticLong = Options.yGalacticLong;
+    this.xGalactic = Options.xGalactic;
+    this.yGalactic = Options.yGalactic;
+
 		this.geoHash = Options.geoHash;
 		this.zoom = Options.zoom;
 		this.emptySpace = Options.emptySpace;
