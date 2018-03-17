@@ -110,6 +110,8 @@ app.get(HyperspaceNodeService.connectedToCoruscantPath, HyperspaceNodeService.co
 
 app.get(HyperspaceNodeService.connectedToCsillaPath, HyperspaceNodeService.connectedToCsilla);
 
+app.post(HyperspaceNodeService.placesAreConnectedPath, HyperspaceNodeService.placesAreConnected);
+
 app.get(HyperspaceNodeService.systemsConnectedQueryPath, HyperspaceNodeService.systemsConnectedQuery);
 
 app.get(HyperspaceNodeService.systemsUnConnectedQueryPath, HyperspaceNodeService.systemsUnConnectedQuery);

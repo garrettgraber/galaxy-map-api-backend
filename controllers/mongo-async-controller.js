@@ -185,6 +185,24 @@ const findOneHyperspaceNodeAsync = async (SearchItem) => {
 	}
 };
 
+const findNearestNodeOfPointOrSystem = async (SearchItem) => {
+	try {
+		const NodeFound = await HyperspaceNodeModel.findOne(SearchItem).exec();
+		if(NodeFound !== null) {
+			return NodeFound;
+		} else {
+			const PlanetFound = await PlanetModel.findOne(SearchItem).exec();
+			const SearchData = (PlanetFound !== null)? PlanetFound : SearchItem;
+			const nearestNodesArray = await findNearestHyperspaceNodes(SearchData.lat, SearchData.lng);
+			const NearestNode = nearestNodesArray[0];
+			return NearestNode;
+		}
+	} catch(err) {
+		console.log("error finding nearest node of Point or System: ", err);
+		throw new Error(400);
+	}
+};
+
 const findNearestHyperspaceNodes = async (latQuery, lngQuery) => {
 	try {
 		const maxDistance = 100.0;
@@ -204,7 +222,6 @@ const findNearestHyperspaceNodes = async (latQuery, lngQuery) => {
 	  	const SearchPoint = new Point(lat, lng);
 	  	const nodesSortedByDistance = SearchPoint.distanceBetweenPointAndNodes(nearestNodes);
 	  	const NearestNode = nodesSortedByDistance[0];
-	  	console.log("Nearest Node: ", NearestNode);
 	  	return [ NearestNode ];
 		} else {
 			return [];
@@ -510,6 +527,7 @@ module.exports = {
 	createCoordinate: createCoordinate,
 	findHyperspaceLaneAndUpdateAsync: findHyperspaceLaneAndUpdateAsync,
 	findNearestHyperspaceNodes: findNearestHyperspaceNodes,
+	findNearestNodeOfPointOrSystem: findNearestNodeOfPointOrSystem,
 	findSector: findSector
 };
 

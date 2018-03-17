@@ -19,6 +19,7 @@ class HyperSpaceNodeRouterService {
   	this.closetNodePath = '/api/hyperspacenode/closet';
   	this.searchNodesPath = '/api/hyperspacenode/search';
   	this.closetNodeToSystemPath = '/api/hyperspacenode/closet-to-system';
+  	this.placesAreConnectedPath = '/api/hyperspacenode/places-connected';
   	this.connectedToCoruscantPath = '/api/hyperspacenode/connected-to-coruscant';
   	this.connectedToCsillaPath = '/api/hyperspacenode/connected-to-csilla';
   	this.systemsConnectedQueryPath = '/api/hyperspacenode/systems-connected-query';
@@ -156,7 +157,6 @@ class HyperSpaceNodeRouterService {
 		});
 	}
 
-
 	pointConnectedToCsilla(req, res, next) {
 		locationConnectedToCsillaAsync(req.query).then(docs => {
 			res.json(docs);
@@ -165,7 +165,103 @@ class HyperSpaceNodeRouterService {
 		});
 	}
 
+	placesAreConnected(req, res, next) {
+		console.log("\nPlaces are connected query: ", req.body);
+		placesAreConnected(req.body).then(docs => {
+			res.json(docs);
+		}).catch(err => {
+			res.sendStatus(404);
+		});
+	}
+
 };
+
+
+
+async function placesAreConnected(PlacesToCompare) {
+	try {
+		const placesConnectedToCoruscant = await placesConnectedToCoruscantCheck(PlacesToCompare);
+		const placesConnectedToCsilla = await placesConnectedToCsillaCheck(PlacesToCompare);
+		const placesConnectedStatus = (placesConnectedToCoruscant || placesConnectedToCsilla)? true : false;
+		return {
+			connected: placesConnectedStatus
+		};
+	} catch(err) {
+		console.log("error: ", error);
+		throw new Error(err);
+	}
+}
+
+async function placesConnectedToCoruscantCheck(PlacesToCompare) {
+	try {
+		const placeAConnectedToCoruscant = await placeConnectedToCoruscantAsync(PlacesToCompare[0]);
+		const placeBConnectedToCoruscant = await placeConnectedToCoruscantAsync(PlacesToCompare[1]);
+		console.log('Place A Coruscant: ', placeAConnectedToCoruscant);
+		console.log('Place B Coruscant: ', placeBConnectedToCoruscant);
+		return placeAConnectedToCoruscant && placeBConnectedToCoruscant;
+	} catch(err) {
+		console.log("error: ", error);
+		throw new Error(err);	
+	}
+}
+
+async function placesConnectedToCsillaCheck(PlacesToCompare) {
+	try {
+		const placeAConnectedToCsilla = await placeConnectedToCsillaAsync(PlacesToCompare[0]);
+		const placeBConnectedToCsilla = await placeConnectedToCsillaAsync(PlacesToCompare[1]);
+		console.log('Place A Csilla: ', placeAConnectedToCsilla);
+		console.log('Place B Csilla: ', placeBConnectedToCsilla);
+		return placeAConnectedToCsilla && placeBConnectedToCsilla;
+	} catch(err) {
+		console.log("error: ", error);
+		throw new Error(err);	
+	}
+}
+
+async function placeConnectedToCoruscantAsync(CurrentPlace) {
+	try {
+		const NearestNode = await MongoController.findNearestNodeOfPointOrSystem(CurrentPlace);
+		const NodeData = {
+			system: NearestNode.system,
+			nodeSystem: NearestNode.system,
+			nodeId: NearestNode.nodeId
+		};
+		const options = {
+		  method: 'post',
+		  body: NodeData,
+		  json: true,
+		  url: NAVCOM + '/hyperspace-connection/coruscant'
+		};
+		const connectionStatus = await rp(options);
+		return connectionStatus;
+	} catch(err) {
+		return false;
+	}
+}
+
+async function placeConnectedToCsillaAsync(CurrentPlace) {
+	try {
+		const NearestNode = await MongoController.findNearestNodeOfPointOrSystem(CurrentPlace);
+		const NodeData = {
+			system: NearestNode.system,
+			nodeSystem: NearestNode.system,
+			nodeId: NearestNode.nodeId
+		};
+		const options = {
+		  method: 'post',
+		  body: NodeData,
+		  json: true,
+		  url: NAVCOM + '/hyperspace-connection/csilla'
+		};
+		const connectionStatus = await rp(options);
+		return connectionStatus;
+	} catch(err) {
+		return false;
+	}
+}
+
+
+
 
 
 
@@ -202,8 +298,6 @@ async function locationConnectedToCsillaAsync(LatLngLocation) {
 	}
 }
 
-
-
 async function locationConnectedToCoruscantAsync(LatLngLocation) {
 	try {
 
@@ -235,9 +329,6 @@ async function locationConnectedToCoruscantAsync(LatLngLocation) {
 		return false;
 	}
 }
-
-
-
 
 async function connectedToCoruscantAsync(systemName) {
 	try {
@@ -322,7 +413,6 @@ async function systemsConnected(systems) {
 		throw new Error(err);
 	}
 }
-
 
 async function systemsUnConnected(systems) {
 	try {
