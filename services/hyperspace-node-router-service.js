@@ -26,6 +26,7 @@ class HyperSpaceNodeRouterService {
   	this.systemsUnConnectedQueryPath = '/api/hyperspacenode/systems-un-connected-query';
   	this.pointConnectedToCoruscantPath = '/api/hyperspacenode/point-connected-to-coruscant';
   	this.pointConnectedToCsillaPath = '/api/hyperspacenode/point-connected-to-csilla';
+  	this.findNearestNodeOfPointOrSystemPath = '/api/hyperspacenode/nearest-node-to-point';
 
   	console.log("Hyperspace Node Service Loading...");
   }
@@ -62,6 +63,14 @@ class HyperSpaceNodeRouterService {
 
 	closetNodeToSystem(req, res, next) {
 		MongoController.closetNodeToSystem(req.query).then(docs => {
+			res.json(docs);
+		}).catch(err => {
+			res.sendStatus(404);
+		});
+	}
+
+	findNearestNodeOfPointOrSystem(req, res, next) {
+		MongoController.findNearestNodeOfPointOrSystem(req.query).then(docs => {
 			res.json(docs);
 		}).catch(err => {
 			res.sendStatus(404);

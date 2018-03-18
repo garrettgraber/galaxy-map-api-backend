@@ -106,6 +106,8 @@ app.get(HyperspaceNodeService.searchNodesPath, HyperspaceNodeService.searchNodes
 
 app.get(HyperspaceNodeService.closetNodeToSystemPath, HyperspaceNodeService.closetNodeToSystem);
 
+app.get(HyperspaceNodeService.findNearestNodeOfPointOrSystemPath, HyperspaceNodeService.findNearestNodeOfPointOrSystem);
+
 app.get(HyperspaceNodeService.connectedToCoruscantPath, HyperspaceNodeService.connectedToCoruscant);
 
 app.get(HyperspaceNodeService.connectedToCsillaPath, HyperspaceNodeService.connectedToCsilla);
