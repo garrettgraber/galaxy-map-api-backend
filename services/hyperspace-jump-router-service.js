@@ -10,7 +10,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 if(DatabaseLinks.hasOwnProperty('navcom') && isDeveloping) {
 	var NAVCOM = 'http://' + DatabaseLinks.navcom.hostname + ':' + DatabaseLinks.navcom.port;
 } else if (isProduction) {
-	var NAVCOM = 'http://172.31.77.226:80';
+	var NAVCOM = 'http://172.31.66.51:80';
 }
 
 const MongoController = require('../controllers/mongo-async-controller.js');
