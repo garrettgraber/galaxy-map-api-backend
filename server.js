@@ -18,7 +18,7 @@ if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo'
 } else if (isProduction) {
 	var TILES = '';
 	var MONGO = 'mongodb://172.31.79.220:27017/test';
-	var NAVCOM = 'http://172.31.77.226:80';
+	var NAVCOM = 'http://172.31.66.51:80';
 } else {
   var TILES = 'http://localhost:8110/tiles-leaflet-new/{z}/{x}/{y}.png';
 }
