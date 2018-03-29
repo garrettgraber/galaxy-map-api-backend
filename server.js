@@ -15,10 +15,12 @@ if(DatabaseLinks.hasOwnProperty('tiles') && DatabaseLinks.hasOwnProperty('mongo'
 	var TILES = 'http://' + DatabaseLinks.tiles.hostname + ':' + DatabaseLinks.tiles.port + '/tiles-leaflet-new/{z}/{x}/{y}.png';
 	var MONGO = 'mongodb://' + DatabaseLinks.mongo.hostname + ':' + DatabaseLinks.mongo.port;
 	var NAVCOM = 'http://' + DatabaseLinks.navcom.hostname + ':' + DatabaseLinks.navcom.port;
+	var HOSTNAME = ip.address();
 } else if (isProduction) {
 	var TILES = '';
 	var MONGO = 'mongodb://172.31.79.220:27017/test';
 	var NAVCOM = 'http://172.31.66.51:80';
+	var HOSTNAME = '0.0.0.0';
 } else {
   var TILES = 'http://localhost:8110/tiles-leaflet-new/{z}/{x}/{y}.png';
 }
@@ -31,6 +33,7 @@ const SectorsService = require('./services/sector-router-service.js');
 const CoordinatesService = require('./services/grid-coordinates-router-service.js');
 const HyperspaceJumpService = require('./services/hyperspace-jump-router-service.js');
 const GeoJsonDataService = require('./services/geo-json-data-service.js');
+
 
 
 console.log("\nMONGO: ", MONGO);
@@ -48,7 +51,7 @@ MongoController.connectToMongo().then(mongoConnectionResult => {
 const serverPort = 8103;
 const app = express();
 
-// app.use(cors());
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -145,6 +148,6 @@ app.get('/api/tile-server-url', function(req, res) {
   res.json({tileServerUrl: TILES});
 });
 
-app.listen(serverPort, ip.address(), function () {
+app.listen(serverPort, HOSTNAME, function () {
 	console.log('Galaxy API listening on port http://' + ip.address() + ':' +  serverPort + '!');
 });
