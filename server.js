@@ -30,6 +30,7 @@ const HyperspaceLaneService = require('./services/hyperspace-lane-router-service
 const SectorsService = require('./services/sector-router-service.js');
 const CoordinatesService = require('./services/grid-coordinates-router-service.js');
 const HyperspaceJumpService = require('./services/hyperspace-jump-router-service.js');
+const GeoJsonDataService = require('./services/geo-json-data-service.js');
 
 
 console.log("\nMONGO: ", MONGO);
@@ -71,6 +72,16 @@ app.get('/api/empty-collections', function(req, res) {
 		res.sendStatus(404);
 	});
 });
+
+
+app.get(GeoJsonDataService.gridDataPath, GeoJsonDataService.gridData);
+
+app.get(GeoJsonDataService.hyperspaceDataPath, GeoJsonDataService.hyperspaceData);
+
+app.get(GeoJsonDataService.regionDataPath, GeoJsonDataService.regionData);
+
+app.get(GeoJsonDataService.sectorDataPath, GeoJsonDataService.sectorData);
+
 
 app.get(PlanetService.planetsWithALocationPath, PlanetService.planetsWithALocation);
 
