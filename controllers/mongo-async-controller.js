@@ -1,6 +1,6 @@
-const mongoose = require('mongoose'),
-			 Promise = require('bluebird');
-
+const mongoose = require('mongoose');
+const Promise = require('bluebird');
+mongoose.Promise = Promise;
 const DatabaseLinks = require('docker-links').parseLinks(process.env);
 const Planet = require('../data-classes/classes.js').Planet;
 const Point = require('../data-classes/classes.js').Point;
