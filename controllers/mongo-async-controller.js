@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
 mongoose.Promise = Promise;
+const distance = require('euclidean-distance');
 const DatabaseLinks = require('docker-links').parseLinks(process.env);
 const Planet = require('../data-classes/classes.js').Planet;
 const Point = require('../data-classes/classes.js').Point;
@@ -313,6 +314,32 @@ const findOnePlanet = async (SearchItem) => {
 	}
 };
 
+const distanceBetweenPlanets = async (SearchItem) => {
+	try {
+		const PlanetAData = await findOnePlanet({system: SearchItem.planetA});
+		const PlanetBData = await findOnePlanet({system: SearchItem.planetB});
+
+		if(PlanetAData.status && PlanetBData.status) {
+			const planetALocation = [PlanetAData.doc.xGalactic, PlanetAData.doc.yGalactic];
+			const planetBLocation = [PlanetBData.doc.xGalactic, PlanetBData.doc.yGalactic];
+			const distanceBetween = parseFloat(distance(planetALocation, planetBLocation).toFixed(2));
+			return {
+				status: true,
+				distance: distanceBetween
+			}
+		} else {
+			return {
+				status: false,
+				distance: null
+			}
+		}
+
+	} catch(err) {
+		console.log("error getting distance between planets: ", err);
+		throw new Error(400);
+	}
+}
+
 const emptyCollections = async () => {
 	try {
 		console.log("emptyCollections has fired..");
@@ -514,6 +541,7 @@ module.exports = {
 	searchHyperspaceLanes: searchHyperspaceLanes,
 	findPlanetAndUpdate: findPlanetAndUpdate,
 	findOnePlanet: findOnePlanet,
+	distanceBetweenPlanets: distanceBetweenPlanets,
 	findAllPlanets: findAllPlanets,
 	findAllPlanetsWithALocation: findAllPlanetsWithALocation,
 	findAllPlanetsWithNoLocation: findAllPlanetsWithNoLocation,

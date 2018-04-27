@@ -94,6 +94,8 @@ app.get(PlanetService.searchPlanetsPath, PlanetService.searchPlanets);
 
 app.get(PlanetService.planetsWithNoLocationPath, PlanetService.planetsWithNoLocation);
 
+app.get(PlanetService.distanceBetweenSystemsPath, PlanetService.distanceBetweenSystems);
+
 
 app.get(CoordinatesService.allCoordinatesPath, CoordinatesService.allCoordinates);
 

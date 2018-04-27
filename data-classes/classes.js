@@ -248,6 +248,15 @@ class HyperspaceRoute {
     this.link = this.lanes[0].link;
   }
 
+  routeLength() {
+    let routeDistance = 0;
+    for(let lane of this.lanes) {
+      routeDistance += lane.length;
+    }
+    const distanceRounded = parseFloat(routeDistance.toFixed(2));
+    return distanceRounded;
+  }
+
   nodesAreTheSame(node1, node2) {
     return node1[0] === node2[0] && node1[1] === node2[1];
   }

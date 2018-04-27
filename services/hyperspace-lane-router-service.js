@@ -9,7 +9,8 @@ const SanctuaryPipeline = {
   coordinates: [
   	[-71.906346, 21.024221],
   	[-67.311466, -46.247859]
-  ]
+  ],
+  length: 7632.42
 };
 
 
@@ -76,11 +77,13 @@ class HyperSpaceLaneRouterService {
 				res.sendStatus(404);
 			} else {
 				const Route = new HyperspaceRoute({lanes: docs});
+				const routeDistance = Route.routeLength();
 				const coordinateArray = Route.buildCoordinatesArray();
 				res.json({
 					name: Route.name,
 					link: Route.link,
-					coordinates: coordinateArray
+					coordinates: coordinateArray,
+					length: routeDistance
 				});
 			}
 		}).catch(err => {
