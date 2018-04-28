@@ -71,24 +71,30 @@ class HyperSpaceLaneRouterService {
 
 	searchAndBuildRoute(req, res, next) {
 		console.log("Hyperspace Lanes Search and build: ", req.query);
-		if(req.query.name === SanctuaryPipeline.name) { res.json(SanctuaryPipeline) }
-		MongoController.searchHyperspaceLanes(req.query).then(docs => {
-			if(docs.length === 0) {
+		if(req.query.name === SanctuaryPipeline.name) {
+			res.json(SanctuaryPipeline);
+		} else {
+
+			MongoController.searchHyperspaceLanes(req.query).then(docs => {
+				if(docs.length === 0) {
+					res.sendStatus(404);
+				} else {
+					const Route = new HyperspaceRoute({lanes: docs});
+					const routeDistance = Route.routeLength();
+					const coordinateArray = Route.buildCoordinatesArray();
+					res.json({
+						name: Route.name,
+						link: Route.link,
+						coordinates: coordinateArray,
+						length: routeDistance
+					});
+				}
+			}).catch(err => {
+				console.log("error finding hyperspace route: ", err);
 				res.sendStatus(404);
-			} else {
-				const Route = new HyperspaceRoute({lanes: docs});
-				const routeDistance = Route.routeLength();
-				const coordinateArray = Route.buildCoordinatesArray();
-				res.json({
-					name: Route.name,
-					link: Route.link,
-					coordinates: coordinateArray,
-					length: routeDistance
-				});
-			}
-		}).catch(err => {
-			res.sendStatus(404);
-		});
+			});
+		}
+		
 	}
 };
 
