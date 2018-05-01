@@ -1,5 +1,6 @@
 const request = require('request');
 const rp = require('request-promise');
+const _ = require('lodash');
 const DatabaseLinks = require('docker-links').parseLinks(process.env);
 
 const MongoController = require('../controllers/mongo-async-controller.js');
@@ -176,14 +177,73 @@ class HyperSpaceNodeRouterService {
 
 	placesAreConnected(req, res, next) {
 		console.log("\nPlaces are connected query: ", req.body);
-		placesAreConnected(req.body).then(docs => {
-			res.json(docs);
-		}).catch(err => {
-			res.sendStatus(404);
-		});
-	}
 
+		if(locationsEqualCheck(req.body)) {
+			console.log("Places are the same");
+			res.json({connected: true});
+		} else {
+			placesAreConnected(req.body).then(docs => {
+				res.json(docs);
+			}).catch(err => {
+				res.sendStatus(404);
+			});
+		}
+	}
 };
+
+
+
+function locationsEqualCheck(locationsArray) {
+	if(allLocationsPoints(locationsArray)) {
+		return pointsEqual(locationsArray);
+	} else if(allLocationsSystems(locationsArray)) {
+		return systemsEqual(locationsArray);
+	} else {
+		return false;
+	}
+}
+
+function pointsEqual(pointsArray) {
+  const StartingPoint = pointsArray[0];
+  for(let i=1;i < pointsArray.length;i++) {
+    const CurrentPoint = pointsArray[i];
+    const latitudeMisMatch = CurrentPoint.lat !== StartingPoint.lat;
+    const longitudeMisMatch = CurrentPoint.lng !== StartingPoint.lng;
+    if(latitudeMisMatch || longitudeMisMatch) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function systemsEqual(systemsArray) {
+  const StartingSystem = systemsArray[0];
+  for(let i=1;i < systemsArray.length;i++) {
+    const CurrentSystem = systemsArray[i];
+    if(StartingSystem.system !== CurrentSystem.system) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function allLocationsPoints(locationsArray) {
+  for(let CurrentLocation of locationsArray) {
+    if(!_.has(CurrentLocation, 'lat') || !_.has(CurrentLocation, 'lng')) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function allLocationsSystems(locationsArray) {
+  for(let CurrentLocation of locationsArray) {
+    if(!_.has(CurrentLocation, 'system')) {
+      return false;
+    }
+  }
+  return true;
+}
 
 
 
@@ -230,6 +290,7 @@ async function placesConnectedToCsillaCheck(PlacesToCompare) {
 async function placeConnectedToCoruscantAsync(CurrentPlace) {
 	try {
 		const NearestNode = await MongoController.findNearestNodeOfPointOrSystem(CurrentPlace);
+		console.log("Nearest Node: ", NearestNode);
 		const NodeData = {
 			system: NearestNode.system,
 			nodeSystem: NearestNode.system,
@@ -251,6 +312,7 @@ async function placeConnectedToCoruscantAsync(CurrentPlace) {
 async function placeConnectedToCsillaAsync(CurrentPlace) {
 	try {
 		const NearestNode = await MongoController.findNearestNodeOfPointOrSystem(CurrentPlace);
+		console.log("Nearest Node: ", NearestNode);
 		const NodeData = {
 			system: NearestNode.system,
 			nodeSystem: NearestNode.system,
