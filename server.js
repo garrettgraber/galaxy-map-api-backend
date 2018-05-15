@@ -96,6 +96,8 @@ app.get(PlanetService.planetsWithNoLocationPath, PlanetService.planetsWithNoLoca
 
 app.get(PlanetService.distanceBetweenSystemsPath, PlanetService.distanceBetweenSystems);
 
+app.post(PlanetService.searchPlanetsForLinkPath, PlanetService.searchPlanetsForLink);
+
 
 app.get(CoordinatesService.allCoordinatesPath, CoordinatesService.allCoordinates);
 
@@ -103,6 +105,8 @@ app.get(CoordinatesService.allCoordinatesPath, CoordinatesService.allCoordinates
 app.get(SectorsService.allSectorsPath, SectorsService.allSectors);
 
 app.get(SectorsService.findSectorPath, SectorsService.findSector);
+
+app.get(SectorsService.allSectorsWithLinksPath, SectorsService.allSectorsWithLinks);
 
 
 app.get(HyperspaceLaneService.allLanesPath, HyperspaceLaneService.allLanes);

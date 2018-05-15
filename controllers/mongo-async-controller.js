@@ -478,13 +478,21 @@ const allSectors = async () => {
 	}
 };
 
+const allSectorsWithLinks = async () => {
+	try {
+		return await SectorModel.find({ link: { $ne: "" } }).exec();
+	} catch(err) {
+		throw new Error(404);
+	}
+};
+
 const findSector = async (SearchItem) => {
 	try {
 		return await SectorModel.find(SearchItem).exec();
 	} catch(err) {
 		throw new Error(404);
 	}
-}
+};
 
 const createCoordinate = async (coordinateValue) => {
 	try {
@@ -535,6 +543,7 @@ module.exports = {
 	totalSectors: totalSectors,
 	allPopulatedCoordinates: allPopulatedCoordinates,
 	allSectors: allSectors,
+	allSectorsWithLinks: allSectorsWithLinks,
 	getAllPlanets: getAllPlanets,
 	getAllHyperspaceNodes: getAllHyperspaceNodes,
 	searchCoordinate: searchCoordinate,

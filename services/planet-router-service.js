@@ -7,6 +7,7 @@ class PlanetRouterService {
   	this.searchPlanetsPath = '/api/search';
   	this.planetsWithNoLocationPath = '/api/no-location';
   	this.distanceBetweenSystemsPath = '/api/distance-between';
+  	this.searchPlanetsForLinkPath = '/api/has-link';
   	console.log("Planets Service Loading...");
   }
 
@@ -45,6 +46,20 @@ class PlanetRouterService {
 				res.json(docs.doc);
 			} else {
 				res.sendStatus(404);
+			}
+		}).catch(err => {
+			res.sendStatus(404);
+		});
+	}
+
+	searchPlanetsForLink(req, res, next) {
+		console.log("Search for planets with: ", req.body);
+		MongoController.findOnePlanet(req.body).then(docs => {
+			if(docs.status) {
+				// console.log("Search: ", docs.doc);
+				res.send(true);
+			} else {
+				res.send(false);
 			}
 		}).catch(err => {
 			res.sendStatus(404);
