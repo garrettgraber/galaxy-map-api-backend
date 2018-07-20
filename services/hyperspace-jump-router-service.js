@@ -37,6 +37,12 @@ class HyperSpaceJumpRouterService {
 				res.sendStatus(500);
 			} else {
 				console.log("Found hyperspace jump, sending!!");
+
+
+				console.log("Body options: ", Object.keys(body));
+
+				console.log("body.paths: ", body.paths);
+
 				res.json(body);
 			}
 		});    
