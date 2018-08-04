@@ -21,6 +21,7 @@ class HyperSpaceLaneRouterService {
   	this.searchLanesPath = '/api/hyperspacelane/search';
   	this.allLaneNamesPath = '/api/hyperspacelane/names';
   	this.searchAndBuildRoutePath = '/api/hyperspacelane/build-route';
+
   	console.log("Hyperspace Lane Service Loading...");
   }
 
@@ -97,6 +98,7 @@ class HyperSpaceLaneRouterService {
 		
 	}
 };
+
 
 
 module.exports = new HyperSpaceLaneRouterService();

@@ -177,6 +177,40 @@ const findHyperspaceLaneAndUpdateAsync = async (SearchItem, UpdateItem) => {
 	}
 };
 
+
+const findHyperspaceLaneByPoints = async (Point1, Point2) => {
+	try {
+		const firstPointLat = Point1[0];
+		const firstPointLng = Point1[1];
+		const secondPointLat = Point2[0];
+		const secondPointLng = Point2[1];
+
+
+
+		const FirstPointAsStart = await HyperLaneModel.findOne({
+			startCoordsLngLat: [firstPointLng, firstPointLat],
+			endCoordsLngLat: [secondPointLng, secondPointLat]
+		}).exec();
+
+		if(FirstPointAsStart) {
+			return FirstPointAsStart;
+		} else {
+			const SecondPointAsStart = await HyperLaneModel.findOne({
+				startCoordsLngLat: [secondPointLng, secondPointLat],
+				endCoordsLngLat: [firstPointLng, firstPointLat]
+			}).exec();
+			if(SecondPointAsStart) {
+				return SecondPointAsStart;
+			} else {
+				return null;
+			}
+		}
+	} catch(err) {
+		console.log("error updating hyperspace node: ", err);
+		throw new Error(400);
+	}
+};
+
 const findOneHyperspaceNodeAsync = async (SearchItem) => {
 	try {
 		return await HyperspaceNodeModel.findOne(SearchItem).exec();
@@ -563,6 +597,7 @@ module.exports = {
 	createSector: createSector,
 	createCoordinate: createCoordinate,
 	findHyperspaceLaneAndUpdateAsync: findHyperspaceLaneAndUpdateAsync,
+	findHyperspaceLaneByPoints: findHyperspaceLaneByPoints,
 	findNearestHyperspaceNodes: findNearestHyperspaceNodes,
 	findNearestNodeOfPointOrSystem: findNearestNodeOfPointOrSystem,
 	findSector: findSector

@@ -1,9 +1,19 @@
 const request = require('request');
 const rp = require('request-promise');
 const _ = require('lodash');
+const Geohash = require('latlon-geohash');
 const DatabaseLinks = require('docker-links').parseLinks(process.env);
+const L = require('leaflet-headless');
+L.GeometryUtil = require('leaflet-geometryutil');
+
+const map = L.map(document.createElement('div')).setView([0, 0], 2);
+map.setSize(1000, 1000);
+
+console.log("L.GeometryUtil: ", L.GeometryUtil);
 
 const MongoController = require('../controllers/mongo-async-controller.js');
+const HyperSpacePseudoNode = require('../data-classes/classes.js').HyperSpacePseudoNode;
+
 
 const isDeveloping = process.env.NODE_ENV !== 'production';
 const isProduction = process.env.NODE_ENV === 'production';
@@ -28,9 +38,25 @@ class HyperSpaceNodeRouterService {
   	this.pointConnectedToCoruscantPath = '/api/hyperspacenode/point-connected-to-coruscant';
   	this.pointConnectedToCsillaPath = '/api/hyperspacenode/point-connected-to-csilla';
   	this.findNearestNodeOfPointOrSystemPath = '/api/hyperspacenode/nearest-node-to-point';
+  	this.nearestHyperspaceNodePseudoPointPath = '/api/hyperspacenode/nearest-pseudo-node'
 
   	console.log("Hyperspace Node Service Loading...");
   }
+
+	nearestHyperspaceNodePseudoPoint(req, res, next) {
+		const lat = req.query.lat;
+		const lng = req.query.lng;
+
+		findNearestPseudoNode(req.query).then(PseudoNode => {
+
+			if(PseudoNode) {
+				res.json(PseudoNode);
+			} else {
+				res.sendStatus(404);
+			}
+
+		});
+	}
 
 	allNodes(req, res, next) {
 		MongoController.getAllHyperspaceNodes().then(docs => {
@@ -191,6 +217,148 @@ class HyperSpaceNodeRouterService {
 	}
 };
 
+
+
+
+
+async function findNearestPseudoNode(NodeSearch) {
+
+	try {
+
+
+		const NodeSearchData = await nodeSearchOrLatLng(NodeSearch);
+
+		console.log("NodeSearchData: ", NodeSearchData);
+
+		const lat = NodeSearchData.lat;
+		const lng = NodeSearchData.lng;
+
+		const docs = await MongoController.getAllHyperspaceLanes();
+		console.log("Total Hyper Lanes in Database: ", docs.length);
+
+		const lanesCoordinatesArray = [];
+		for(let lane of docs) {
+			const currentlaneCoordinates = reverseCoordinatesLatLng(lane.coordinates);
+			lanesCoordinatesArray.push(currentlaneCoordinates);
+		}
+
+		console.log("lanesCoordinatesArray length: ", lanesCoordinatesArray.length);
+
+		const ClosestPseudoNode = L.GeometryUtil.closest(map, lanesCoordinatesArray, [lat, lng]);
+
+		console.log("Closest Pseudo Node: ", ClosestPseudoNode);
+
+		const pseudoNodeXGalactic = getGalacticXFromLongitude(ClosestPseudoNode.lng);
+		const pseudoNodeYGalactic = getGalacticYFromLatitude(ClosestPseudoNode.lat);
+
+		const closestLane = L.GeometryUtil.closestLayer(map, lanesCoordinatesArray, [lat, lng]);
+
+		console.log("Closest Lane: ", closestLane);
+
+		console.log("Pseudo Node X Galactic: ", pseudoNodeXGalactic);
+		console.log("Pseudo Node Y Galactic: ", pseudoNodeYGalactic);
+
+		const closestLaneCoordinates = closestLane.layer;
+		const laneStartLatLng = closestLaneCoordinates[0];
+		const laneEndLatLng = closestLaneCoordinates[closestLaneCoordinates.length - 1];
+
+		console.log("Lane Start: ", laneStartLatLng);
+		console.log("Lane End: ", laneEndLatLng);
+
+		const LaneData = await MongoController.findHyperspaceLaneByPoints(laneStartLatLng, laneEndLatLng);
+		console.log("Lane Data: ", LaneData);
+
+
+		const startGeoHash = Geohash.encode(laneStartLatLng[0], laneStartLatLng[1], 22);
+		const endGeoHash = Geohash.encode(laneEndLatLng[0], laneEndLatLng[1], 22);
+		const pseudoNodeGeoHash = Geohash.encode(ClosestPseudoNode.lat, ClosestPseudoNode.lng, 22);
+
+		const startLat = laneStartLatLng[0];
+		const startLng = laneStartLatLng[1];
+		const endLat = laneEndLatLng[0];
+		const endLng = laneEndLatLng[1];
+
+		const StartNodeData = await MongoController.findOneHyperspaceNodeAsync({
+			lat: startLat,
+			lng: startLng
+		});
+
+		console.log("StartNodeData: ", StartNodeData);
+
+		const startNodeId = StartNodeData.nodeId;
+
+		const EndNodeData = await MongoController.findOneHyperspaceNodeAsync({
+			lat: endLat,
+			lng: endLng
+		});
+
+		console.log("EndNodeData: ", EndNodeData);
+
+		const endNodeId = EndNodeData.nodeId;
+
+		const pseudoNodeId = 'PN-' + startNodeId + '-' + endNodeId + '-' + pseudoNodeGeoHash;
+
+
+		const PseudoNodeFound = new HyperSpacePseudoNode({
+			lat: ClosestPseudoNode.lat,
+			lng: ClosestPseudoNode.lng,
+			hyperspaceLanes: [LaneData.name],
+			xGalactic: pseudoNodeXGalactic,
+			yGalactic: pseudoNodeYGalactic,
+			xGalacticLong: pseudoNodeXGalactic,
+			yGalacticLong: pseudoNodeYGalactic,
+			zoom: 5,
+			emptySpace: true,
+			system: pseudoNodeId,
+			nodeId: pseudoNodeId
+		});
+
+		return PseudoNodeFound;
+
+	} catch(err) {
+		console.log("error: ", err);
+		throw new Error(err);
+	}
+};
+
+
+async function nodeSearchOrLatLng(NodeSearch) {
+	try {
+
+		if(NodeSearch.hasOwnProperty('lat') && NodeSearch.hasOwnProperty('lng')) {
+			console.log("has lat and lng");
+			return NodeSearch;
+		} else if(NodeSearch.hasOwnProperty('system')) {
+
+			const SystemFound = await MongoController.findOnePlanet(NodeSearch);
+
+			console.log("System Found: ", SystemFound);
+
+
+			if(SystemFound.status) {
+				return SystemFound.doc;
+			} else {
+				return null;
+			}
+
+		} else {
+			console.log("NodeSearch: ", NodeSearch);
+			return NodeSearch;
+		}
+
+	} catch(err) {
+		console.log("error: ", error);
+		throw new Error(err);
+	}
+};
+
+
+
+function reverseCoordinatesLatLng(coordinatesArray) {
+  return _.map(coordinatesArray, (coordinate) => {
+    return coordinate.slice().reverse();
+  });
+};
 
 
 function locationsEqualCheck(locationsArray) {
@@ -508,6 +676,18 @@ async function systemsUnConnected(systems) {
 		throw new Error(err);
 	}
 }
+
+
+
+function getGalacticYFromLatitude(latitude) {
+  return  (-3.07e-19*(latitude**12)) + (-1.823e-18*(latitude**11)) + (4.871543e-15*(latitude**10)) + (4.1565807e-14*(latitude**9)) + (-2.900986202e-11 * (latitude**8)) + (-1.40444283864e-10*(latitude**7)) + (7.9614373223054e-8*(latitude**6)) + (7.32976568692443e-7*(latitude**5)) + (-0.00009825374539548058*(latitude**4)) + (0.005511093818675318*(latitude**3)) + (0.04346753629461727 * (latitude**2)) + (111.30155374684914 * latitude);
+}
+
+function getGalacticXFromLongitude(longitude) {
+  return (111.3194866138503 * longitude);
+}
+
+
 
 
 module.exports = new HyperSpaceNodeRouterService();

@@ -118,6 +118,8 @@ app.get(HyperspaceLaneService.allLaneNamesPath, HyperspaceLaneService.allLaneNam
 app.get(HyperspaceLaneService.searchAndBuildRoutePath, HyperspaceLaneService.searchAndBuildRoute);
 
 
+app.get(HyperspaceNodeService.nearestHyperspaceNodePseudoPointPath, HyperspaceNodeService.nearestHyperspaceNodePseudoPoint);
+
 app.get(HyperspaceNodeService.allNodesPath, HyperspaceNodeService.allNodes);
 
 app.get(HyperspaceNodeService.closetNodePath, HyperspaceNodeService.closetNode);

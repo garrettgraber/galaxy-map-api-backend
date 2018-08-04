@@ -14,6 +14,12 @@ RUN apt-get install -y \
 	telnet \
 	wget
 
+# Install packages for leaflet-headless
+RUN apt-get install -y \
+	libcairo2-dev \
+	libjpeg-dev \
+	libgif-dev
+
 # cleanup
 RUN apt-get clean;
 
