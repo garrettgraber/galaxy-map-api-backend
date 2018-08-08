@@ -225,6 +225,26 @@ async function findNearestPseudoNode(NodeSearch) {
 
 	try {
 
+		const NodeFound = await MongoController.findOneHyperspaceNodeAsync(NodeSearch);
+
+		if(NodeFound) {
+
+			// return {
+		 //    lng: NodeFound.lng,
+		 //    lat: NodeFound.lat,
+		 //    hyperspaceLanes: NodeFound.hyperspaceLanes,
+		 //    nodeId: NodeFound.nodeId,
+		 //    system: NodeFound.system,
+		 //    xGalacticLong: NodeFound.xGalactic,
+		 //    yGalacticLong: NodeFound.yGalacticLong,
+		 //    xGalactic: NodeFound.xGalactic,
+		 //    yGalactic: NodeFound.yGalactic,
+		 //    zoom: NodeFound.zoom,
+		 //    emptySpace: NodeFound.emptySpace
+			// }
+
+			return NodeFound;
+		}
 
 		const NodeSearchData = await nodeSearchOrLatLng(NodeSearch);
 
@@ -246,7 +266,35 @@ async function findNearestPseudoNode(NodeSearch) {
 
 		const ClosestPseudoNode = L.GeometryUtil.closest(map, lanesCoordinatesArray, [lat, lng]);
 
+		const NearestNodeFound = await MongoController.findNearestNodeOfPointOrSystem({
+			lat: ClosestPseudoNode.lat,
+			lng: ClosestPseudoNode.lng
+		});
+
 		console.log("Closest Pseudo Node: ", ClosestPseudoNode);
+		console.log("Nearest Node Found: ", NearestNodeFound.loc);
+		console.log("NearestNodeFound: ", NearestNodeFound);
+
+		const closestPseudoNodeLongitude = parseFloat(ClosestPseudoNode.lng.toFixed(6));
+		const closestPseudoNodeLatitude = parseFloat(ClosestPseudoNode.lat.toFixed(6));
+
+		const nearestNodeLongitude = parseFloat(NearestNodeFound.lng.toFixed(6));
+		const nearestNodeLatitude = parseFloat(NearestNodeFound.lat.toFixed(6));
+
+
+
+		const nearestNodeInLongitude = closestPseudoNodeLongitude + 0.5 > nearestNodeLongitude && closestPseudoNodeLongitude - 0.5 < nearestNodeLongitude;
+
+
+		const nearestNodeInLatitude = closestPseudoNodeLatitude + 0.5 > nearestNodeLatitude && closestPseudoNodeLatitude - 0.5 < nearestNodeLatitude;
+
+
+
+
+		if(nearestNodeInLongitude && nearestNodeInLatitude) {
+			return NearestNodeFound;
+		}
+
 
 		const pseudoNodeXGalactic = getGalacticXFromLongitude(ClosestPseudoNode.lng);
 		const pseudoNodeYGalactic = getGalacticYFromLatitude(ClosestPseudoNode.lat);
@@ -259,6 +307,18 @@ async function findNearestPseudoNode(NodeSearch) {
 		console.log("Pseudo Node Y Galactic: ", pseudoNodeYGalactic);
 
 		const closestLaneCoordinates = closestLane.layer;
+
+		const segementsCoordinates = getCoordinatesSegementsArray(closestLaneCoordinates);
+
+		const closestTwoSegementOfLane = L.GeometryUtil.closestLayer(map, segementsCoordinates, [ClosestPseudoNode.lat, ClosestPseudoNode.lng]);
+
+		console.log("closestTwoSegementOfLane: ", closestTwoSegementOfLane);
+
+		const cutCoordinate = closestTwoSegementOfLane.layer[0];
+
+		const indexToCutCoordinatesAt = getIndexOfCoordinate(cutCoordinate, closestLaneCoordinates);
+		console.log("indexToCutCoordinatesAt: ", indexToCutCoordinatesAt);
+
 		const laneStartLatLng = closestLaneCoordinates[0];
 		const laneEndLatLng = closestLaneCoordinates[closestLaneCoordinates.length - 1];
 
@@ -266,7 +326,9 @@ async function findNearestPseudoNode(NodeSearch) {
 		console.log("Lane End: ", laneEndLatLng);
 
 		const LaneData = await MongoController.findHyperspaceLaneByPoints(laneStartLatLng, laneEndLatLng);
+		const LaneDataReversed = await MongoController.findHyperspaceLaneByPoints(laneEndLatLng, laneStartLatLng);
 		console.log("Lane Data: ", LaneData);
+		console.log("Lane Data Reversed: ", LaneDataReversed);
 
 
 		const startGeoHash = Geohash.encode(laneStartLatLng[0], laneStartLatLng[1], 22);
@@ -296,7 +358,7 @@ async function findNearestPseudoNode(NodeSearch) {
 
 		const endNodeId = EndNodeData.nodeId;
 
-		const pseudoNodeId = 'PN-' + startNodeId + '-' + endNodeId + '-' + pseudoNodeGeoHash;
+		const pseudoNodeId = 'PN-' + startNodeId + '-' + endNodeId + '-' + pseudoNodeGeoHash + '-' + indexToCutCoordinatesAt;
 
 
 		const PseudoNodeFound = new HyperSpacePseudoNode({
@@ -320,6 +382,27 @@ async function findNearestPseudoNode(NodeSearch) {
 		throw new Error(err);
 	}
 };
+
+
+function getIndexOfCoordinate(coordinate, lanesCoordinatesArray) {
+	for(let i=0; i < lanesCoordinatesArray.length; i++) {
+		const currentCoordinate = lanesCoordinatesArray[i];
+		if(currentCoordinate[0] === coordinate[0] && currentCoordinate[1] === coordinate[1]) {
+			return i + 1;
+		}
+	}
+}
+
+
+function getCoordinatesSegementsArray(lanesCoordinatesArray) {
+	const segementsArrays = [];
+	for(let i=0; i < lanesCoordinatesArray.length - 1; i++) {
+		const currentCoordinates = lanesCoordinatesArray[i];
+		const nextCoordinates = lanesCoordinatesArray[i + 1];
+		segementsArrays.push([ currentCoordinates, nextCoordinates ]);
+	}
+	return segementsArrays;
+}
 
 
 async function nodeSearchOrLatLng(NodeSearch) {
