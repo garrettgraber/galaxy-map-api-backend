@@ -358,7 +358,7 @@ async function findNearestPseudoNode(NodeSearch) {
 
 		const endNodeId = EndNodeData.nodeId;
 
-		const pseudoNodeId = 'PN-' + startNodeId + '-' + endNodeId + '-' + pseudoNodeGeoHash + '-' + indexToCutCoordinatesAt;
+		const pseudoNodeId = 'PN-' + startNodeId + '-' + endNodeId + '-' + pseudoNodeGeoHash + '-' + indexToCutCoordinatesAt + '-' + LaneData.laneId;
 
 
 		const PseudoNodeFound = new HyperSpacePseudoNode({

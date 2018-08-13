@@ -106,7 +106,8 @@ const HyperLaneSchema = new Schema({
 	endNodeId: { type : Object, "default" : {} },
 	coordinates: [
 		[Number, Number]
-	]
+	],
+	laneId: Number
 });
 HyperLaneSchema.set('autoIndex', true);
 const HyperLaneModel = mongoose.model('HyperLaneModel', HyperLaneSchema);
