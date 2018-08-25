@@ -19,6 +19,7 @@ class HyperSpaceLaneRouterService {
   constructor() {
   	this.allLanesPath = '/api/hyperspacelane/';
   	this.searchLanesPath = '/api/hyperspacelane/search';
+  	this.searchLanesByIdPath = '/api/hyperspacelane/search-lane-id';
   	this.allLaneNamesPath = '/api/hyperspacelane/names';
   	this.searchAndBuildRoutePath = '/api/hyperspacelane/build-route';
 
@@ -41,6 +42,20 @@ class HyperSpaceLaneRouterService {
 				res.sendStatus(404);
 			} else {
 				res.json(docs);
+			}
+		}).catch(err => {
+			res.sendStatus(404);
+		});
+	}
+
+	searchLanesById(req, res, next) {
+		console.log("Hyperspace Lanes Search: ", req.query);
+		const laneId = parseInt(req.query.id);
+		MongoController.searchHyperspaceLanes({laneId: laneId}).then(docs => {
+			if(docs.length === 0) {
+				res.sendStatus(404);
+			} else {
+				res.json(docs[0].name);
 			}
 		}).catch(err => {
 			res.sendStatus(404);

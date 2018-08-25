@@ -115,6 +115,8 @@ app.get(HyperspaceLaneService.allLanesPath, HyperspaceLaneService.allLanes);
 
 app.get(HyperspaceLaneService.searchLanesPath, HyperspaceLaneService.searchLanes);
 
+app.get(HyperspaceLaneService.searchLanesByIdPath, HyperspaceLaneService.searchLanesById);
+
 app.get(HyperspaceLaneService.allLaneNamesPath, HyperspaceLaneService.allLaneNames);
 
 app.get(HyperspaceLaneService.searchAndBuildRoutePath, HyperspaceLaneService.searchAndBuildRoute);
