@@ -310,7 +310,13 @@ async function findNearestPseudoNode(NodeSearch) {
 
 		const segementsCoordinates = getCoordinatesSegementsArray(closestLaneCoordinates);
 
-		const closestTwoSegementOfLane = L.GeometryUtil.closestLayer(map, segementsCoordinates, [ClosestPseudoNode.lat, ClosestPseudoNode.lng]);
+		const pseudoNodeLatEightFigures = numberToEightSignificantFigures(ClosestPseudoNode.lat);
+		const pseudoNodeLngEightFigures = numberToEightSignificantFigures(ClosestPseudoNode.lng);
+
+		const pseudoNodeIndex = checkIfPseudoNodeIsCoordinate(ClosestPseudoNode, closestLaneCoordinates);
+		console.log("pseudoNodeIndex: ", pseudoNodeIndex);
+
+		const closestTwoSegementOfLane = L.GeometryUtil.closestLayer(map, segementsCoordinates, [pseudoNodeLatEightFigures, pseudoNodeLngEightFigures]);
 
 		console.log("closestTwoSegementOfLane: ", closestTwoSegementOfLane);
 
@@ -357,8 +363,9 @@ async function findNearestPseudoNode(NodeSearch) {
 		console.log("EndNodeData: ", EndNodeData);
 
 		const endNodeId = EndNodeData.nodeId;
+		const usedIndexToCut = (pseudoNodeIndex !== null)? pseudoNodeIndex : indexToCutCoordinatesAt;
 
-		const pseudoNodeId = 'PN-' + startNodeId + '-' + endNodeId + '-' + pseudoNodeGeoHash + '-' + indexToCutCoordinatesAt + '-' + LaneData.laneId;
+		const pseudoNodeId = 'PN-' + startNodeId + '-' + endNodeId + '-' + pseudoNodeGeoHash + '-' + usedIndexToCut + '-' + LaneData.laneId;
 
 
 		const PseudoNodeFound = new HyperSpacePseudoNode({
@@ -383,6 +390,50 @@ async function findNearestPseudoNode(NodeSearch) {
 	}
 };
 
+
+function closetIndexByCoordinateSegment(Optioins) {
+
+	 	const closestLane = Options.closestLane;
+	 	const ClosestPseudoNode = Options.ClosestPseudoNode;
+	 	const map = Options.map;
+
+		const closestLaneCoordinates = closestLane.layer;
+
+		const segementsCoordinates = getCoordinatesSegementsArray(closestLaneCoordinates);
+
+		const pseudoNodeLatEightFigures = numberToEightSignificantFigures(ClosestPseudoNode.lat);
+		const pseudoNodeLngEightFigures = numberToEightSignificantFigures(ClosestPseudoNode.lng);
+
+		const closestTwoSegementOfLane = L.GeometryUtil.closestLayer(map, segementsCoordinates, [pseudoNodeLatEightFigures, pseudoNodeLngEightFigures]);
+
+		console.log("closestTwoSegementOfLane: ", closestTwoSegementOfLane);
+
+		const cutCoordinate = closestTwoSegementOfLane.layer[0];
+		return cutCoordinate;
+}
+
+
+function checkIfPseudoNodeIsCoordinate(PseduoNodeLoction, coordinatesArray) {
+	const pseudoNodeLatitude = numberToEightSignificantFigures(PseduoNodeLoction.lat);
+	const pseudoNodeLongitude = numberToEightSignificantFigures(PseduoNodeLoction.lng);
+
+	for(let i=0; i < coordinatesArray.length; i++) {
+		const currentCoordinate = coordinatesArray[i];
+		const currentLatitude = currentCoordinate[0];
+		const currentLongitude = currentCoordinate[1];
+		const pseudoNodeLatitudeMatchesCoordinate = currentLatitude === pseudoNodeLatitude;
+		const pseudoNodeLongitudeMatchesCoordinate = currentLongitude === pseudoNodeLongitude;
+		if(pseudoNodeLongitudeMatchesCoordinate && pseudoNodeLatitudeMatchesCoordinate) {
+			// return i - 1;
+			return i + 1;
+		}
+	}
+	return null;
+}
+
+function numberToEightSignificantFigures(floatingCoordinate) {
+	return parseFloat(Number.parseFloat(floatingCoordinate).toPrecision(8));
+}
 
 function getIndexOfCoordinate(coordinate, lanesCoordinatesArray) {
 	for(let i=0; i < lanesCoordinatesArray.length; i++) {
