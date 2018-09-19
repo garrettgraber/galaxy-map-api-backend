@@ -19,7 +19,7 @@ which npm
 which node
 which bash
 
-npm install
+# npm install
 
 
 npm ls --depth=0

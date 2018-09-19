@@ -431,9 +431,11 @@ function checkIfPseudoNodeIsCoordinate(PseduoNodeLoction, coordinatesArray) {
 	return null;
 }
 
+
 function numberToEightSignificantFigures(floatingCoordinate) {
-	return parseFloat(Number.parseFloat(floatingCoordinate).toPrecision(8));
-}
+	const precisionValue = (floatingCoordinate >= 100.0)? 9 : 8;
+	return parseFloat(Number.parseFloat(floatingCoordinate).toPrecision(precisionValue));
+};
 
 function getIndexOfCoordinate(coordinate, lanesCoordinatesArray) {
 	for(let i=0; i < lanesCoordinatesArray.length; i++) {
