@@ -1,5 +1,4 @@
-
-FROM node:10-slim
+FROM node:10
 
 # Update packages
 RUN apt-get update -y --fix-missing;
@@ -12,6 +11,7 @@ RUN apt-get install -y \
 	redis-server \
 	tcl8.5 \
 	telnet \
+	python \
 	wget
 
 # Install packages for leaflet-headless
