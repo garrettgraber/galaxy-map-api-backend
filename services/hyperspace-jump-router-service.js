@@ -22,6 +22,7 @@ class HyperSpaceJumpRouterService {
   	this.minimumJumpPath = '/api/hyperspace-jump/minimum-paths';
   	console.log("Hyperspace Jump Service Loading...");
   }
+  
 	calculateShortestJump(req, res, next) {
 		console.log("calculate hyperspace jump: ", req.body);
 		const JumpData = req.body;
@@ -37,16 +38,13 @@ class HyperSpaceJumpRouterService {
 				res.sendStatus(500);
 			} else {
 				console.log("Found hyperspace jump, sending!!");
-
-
 				console.log("Body options: ", Object.keys(body));
-
 				console.log("body.paths: ", body.paths);
-
 				res.json(body);
 			}
 		});    
 	}
+
 	calculateMultipleJumps(req, res, next) {
 		console.log("calculate hyperspace jump: ", req.body);
 		const JumpData = req.body;
@@ -66,6 +64,7 @@ class HyperSpaceJumpRouterService {
 			}
 		});
 	}
+
 	calculateMinimumJumps(req, res, next) {
 		let JumpData = req.body;
 		if(JumpData.limit > 10) {
@@ -88,20 +87,11 @@ class HyperSpaceJumpRouterService {
 						res.sendStatus(500);
 					} else {
 						console.log("Found hyperspace jump, sending!!");
-
 						const totalPaths = body.paths.length;
-
-						const pathJumpTotals = _.map(body.paths, (currentPath) => {
-							return currentPath.jumps.length;
-						});
-
+						const pathJumpTotals = _.map(body.paths, (currentPath) => { return currentPath.jumps.length; });
 						const pathWithTheMostJumps = Math.max.apply(Math, pathJumpTotals);
-
 						console.log("pathWithTheMostJumps: ", pathWithTheMostJumps);
-
-
 						console.log("totalPaths: ", totalPaths);
-
 						res.json(body);
 					}
 				});

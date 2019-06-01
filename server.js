@@ -35,13 +35,10 @@ const HyperspaceJumpService = require('./services/hyperspace-jump-router-service
 const GeoJsonDataService = require('./services/geo-json-data-service.js');
 
 
-
-
-
-console.log("\nMONGO: ", MONGO);
-console.log("NAVCOM: ", NAVCOM);
-console.log("TILES: ", TILES);
-console.log("\n");
+// console.log("\nMONGO: ", MONGO);
+// console.log("NAVCOM: ", NAVCOM);
+// console.log("TILES: ", TILES);
+// console.log("\n");
 
 console.time("Connect to Mongo");
 MongoController.connectToMongo().then(mongoConnectionResult => {

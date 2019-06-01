@@ -3,8 +3,8 @@ const Promise = require('bluebird');
 mongoose.Promise = Promise;
 const distance = require('euclidean-distance');
 const DatabaseLinks = require('docker-links').parseLinks(process.env);
-const Planet = require('../data-classes/classes.js').Planet;
-const Point = require('../data-classes/classes.js').Point;
+const Planet = require('../data-classes/planet.js');
+const Point = require('../data-classes/point.js');
 const Alphabets = require('../data-classes/alphabets.js');
 const Schema = mongoose.Schema;
 

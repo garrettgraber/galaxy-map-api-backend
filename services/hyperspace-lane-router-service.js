@@ -1,7 +1,7 @@
 const _ = require('lodash');
 
 const MongoController = require('../controllers/mongo-async-controller.js');
-const HyperspaceRoute = require('../data-classes/classes.js').HyperspaceRoute;
+const HyperSpaceRoute = require('../data-classes/hyperSpaceRoute.js');
 
 const SanctuaryPipeline = {
 	name: "Sanctuary Pipeline",
@@ -90,12 +90,11 @@ class HyperSpaceLaneRouterService {
 		if(req.query.name === SanctuaryPipeline.name) {
 			res.json(SanctuaryPipeline);
 		} else {
-
 			MongoController.searchHyperspaceLanes(req.query).then(docs => {
 				if(docs.length === 0) {
 					res.sendStatus(404);
 				} else {
-					const Route = new HyperspaceRoute({lanes: docs});
+					const Route = new HyperSpaceRoute({lanes: docs});
 					const routeDistance = Route.routeLength();
 					const coordinateArray = Route.buildCoordinatesArray();
 					res.json({
@@ -110,7 +109,6 @@ class HyperSpaceLaneRouterService {
 				res.sendStatus(404);
 			});
 		}
-		
 	}
 };
 

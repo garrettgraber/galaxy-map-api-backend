@@ -12,7 +12,7 @@ map.setSize(1000, 1000);
 console.log("L.GeometryUtil: ", L.GeometryUtil);
 
 const MongoController = require('../controllers/mongo-async-controller.js');
-const HyperSpacePseudoNode = require('../data-classes/classes.js').HyperSpacePseudoNode;
+const HyperSpacePseudoNode = require('../data-classes/hyperSpacePseudoNode.js');
 
 
 const isDeveloping = process.env.NODE_ENV !== 'production';
