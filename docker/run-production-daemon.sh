@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-./build.sh
+# ./build.sh
 # echo "Deleting "
 docker rm -f galaxy-map-server
 echo "Running galaxy-map-server.."
